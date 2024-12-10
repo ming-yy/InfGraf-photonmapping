@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <array>
+#include <list>
 #include <vector>
 #include <stack>
 #include <initializer_list>
@@ -18,7 +19,6 @@
 #include <cmath>        // ya contiene todos los métodos matemáticos con namespace std
 #include <stdexcept>
 #include <memory>        // Para std::shared_ptr
-
 
 // Constantes
 constexpr float MARGEN_ERROR = 1e-6f;          // Para calcular intersecciones
@@ -54,6 +54,6 @@ using std::string;
 using std::to_string;
 using std::vector;
 using std::setw;
-
+using std::list;
 
 #endif // UTILIDADES_H
