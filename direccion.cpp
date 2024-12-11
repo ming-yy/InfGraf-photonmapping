@@ -25,6 +25,10 @@ Direccion Direccion::operator+(const Direccion& d) const {
     return Direccion(coord[0] + d.coord[0], coord[1] + d.coord[1], coord[2] + d.coord[2]);
 }
 
+Direccion Direccion::operator-() const {
+    return Direccion(-coord[0], -coord[1], -coord[2]);
+}
+
 Direccion Direccion::operator-(const Direccion& d) const {
     return Direccion(coord[0] - d.coord[0], coord[1] - d.coord[1], coord[2] - d.coord[2]);
 }

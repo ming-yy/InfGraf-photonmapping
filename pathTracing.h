@@ -14,6 +14,7 @@
 #include "camara.h"
 #include "utilidades.h"
 #include <optional>
+#include <thread>
 
 
 enum TipoRayo {
@@ -62,7 +63,7 @@ std::optional<Direccion> calcDirRefractante(const Direccion& wo, const Direccion
 // incidente correspondiente (la que se "aleja" de la cámara). Devuelve en <probRayo> la
 // probabilidad de que salga el rayo que se ha decidido que salga.
 Rayo obtenerRayoRuletaRusa(const TipoRayo tipoRayo, const Punto& origen, const Direccion& wo,
-                           const Direccion& normal, float& probRayo, bool debug);
+                           const Direccion& normal, float& probRayo);
 
 // Función que realiza una selección probabilística del tipo de rayo que
 // será disparado (difuso, especular o refractante) basándose en los coeficientes
@@ -103,27 +104,27 @@ float calcCosenoAnguloIncidencia(const Direccion& d, const Direccion& n);
 //
 // Disclaimer: solo debería usarse para rayos difusos. Si no lo es, debe devolver RGB(0,0,0).
 RGB nextEventEstimation(const Punto& p0, const Direccion& normal, const Escena& escena,
-                        const BSDFs& coefs, bool debug);
+                        const BSDFs& coefs);
 
 // Función recursiva que calcula la radiancia del punto <origen> y las radiancias de los puntos
 // intersectados tras <rebotesRestantes> rebotes
 RGB recursividadRadianciaIndirecta(const Punto& origen, const Direccion &wo, const BSDFs &coefsPtoInterseccion, 
                                     const Direccion& normal, const Escena& escena,
-                                    const unsigned rebotesRestantes, bool debug);
+                                    const unsigned rebotesRestantes);
 
 // Función que, especificaciones contenidas por los parámetros pasados, devuelve la emisión indirecta
 // para el punto <ptoIntersec> que tiene la normal <normal> respecto al objeto con el que ha intersecado.
 RGB obtenerRadianciaSalienteIndirecta(const Escena& escena, const unsigned maxRebotes, 
                                         const unsigned numRayosMontecarlo, const Punto& ptoIntersec,
                                         const Direccion& wo, const BSDFs &coefsPtoInterseccion,
-                                        const Direccion& normal, bool debug);
+                                        const Direccion& normal);
 
 // Función que devuelve la radiancia saliente total (directa + indirecta) dado un rayo y una escena,
 // rebotando un máximo de <maxRebotes> veces y calculada a través de la media de <numRayosMontecarlo> rayos
 // Cabe aclarar que el primer punto de intersección es siempre el mismo, los rayos "Montecarlo" comienzan
 // aleatoriamente siempre desde este primer punto.
 RGB obtenerRadianciaSalienteTotal(const Rayo &rayo, const Escena &escena, const unsigned maxRebotes,
-                                  const unsigned numRayosMontecarlo, bool debug);
+                                  const unsigned numRayosMontecarlo);
 
 // Método que muestra por pantalla el número de píxeles procesados (cada 100 píxeles)
 void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned ancho, unsigned alto);
@@ -150,3 +151,18 @@ void renderizarEscenaConAntialiasing(Camara& camara, unsigned numPxlsAncho, unsi
 void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
                       const unsigned maxRebotes, const unsigned numRayosMontecarlo, const bool printPixelesProcesados);
+
+// Función auxiliar para renderizar un rango específico de filas
+void renderizarRangoFilas(Camara& camara, unsigned inicioFila, unsigned finFila,
+                          unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel, float altoPorPixel,
+                          const unsigned maxRebotes, const unsigned numRayosMontecarlo,
+                          vector<vector<RGB>>& coloresEscena, const unsigned rpp, const unsigned thread);
+
+// Función principal de renderizado con threads. Si no se indica el número de threads, se usará el máximo
+// número disponible.
+// Disclaimer: no poner un número de threads que sobrepase los núcleos lógicos del pc; no mejorará rendimiento
+void renderizarEscenaConThreads(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
+                                const Escena& escena, const string& nombreEscena, const unsigned rpp,
+                                const unsigned maxRebotes, const unsigned numRayosMontecarlo,
+                                const bool printPixelesProcesados,
+                                unsigned numThreads = std::thread::hardware_concurrency());

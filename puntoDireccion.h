@@ -29,9 +29,6 @@ public:
     // Función para mostrar por pantalla el contenido del punto o dirección
     friend ostream& operator<<(ostream& os, const PuntoDireccion& pd);
 
-
-
-
 private:
     // Método privado para calcular el producto escalar
     float productoEscalar(const PuntoDireccion& d) const;

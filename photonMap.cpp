@@ -11,9 +11,9 @@ float PhotonAxisPosition::operator()(const Photon& p, size_t i) const {
     return p.getCoord(i);
 }
 
-PhotonMap generarPhotonMap(vector<Photon>& fotonVec){
-    list<Photon> photons(fotonVec.begin(), fotonVec.end());
-    return PhotonMap(photons, PhotonAxisPosition());
+PhotonMap generarPhotonMap(vector<Photon>& vecFotones){
+    list<Photon> photons(vecFotones.begin(), vecFotones.end());
+    return PhotonMap(std::move(photons), PhotonAxisPosition());
 }
 
 void fotonesCercanos(PhotonMap& photonMap, array<float, 3>& coordBusqueda, float radio,

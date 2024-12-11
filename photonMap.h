@@ -17,7 +17,7 @@ struct PhotonAxisPosition {
 using PhotonMap = nn::KDTree<Photon,3,PhotonAxisPosition>;
 
 // Función que devuelve un PhotonMap dada una lista de fotones
-PhotonMap generarPhotonMap(vector<Photon>& fotonVec);
+PhotonMap generarPhotonMap(vector<Photon>& vecFotones);
 
 // Método que devuelve por referencia en <fotonesCercanos> los fotos más cercanos
 // a la posición <coordBusqueda>, dado un radio de busqueda maximo <radio> y un

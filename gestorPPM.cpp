@@ -247,7 +247,7 @@ float maximoValorRGB(const vector<vector<RGB>>& matrizRGB) {
     for (const auto& fila : matrizRGB) {
         for (const auto& pixel : fila) {
             // Encuentra el máximo entre los tres valores del array de cada RGB
-            maximo = max(maximo, pixel.max());
+            maximo = max(maximo, max(pixel));
         }
     }
     return maximo;

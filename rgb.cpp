@@ -24,10 +24,6 @@ RGB::RGB(init_list<float> _rgb) {
 
 RGB::RGB(const array<float, 3>& _rgb): rgb(_rgb) {}
 
-float RGB::max() const {
-    return std::max({rgb[0], rgb[1], rgb[2]});
-}
-
 RGB RGB::operator+(const RGB& d) const {
     return RGB(rgb[0] + d.rgb[0], rgb[1] + d.rgb[1], rgb[2] + d.rgb[2]);
 }
@@ -69,8 +65,32 @@ RGB& RGB::operator=(const init_list<float>& r) {
     return *this;
 }
 
+RGB& RGB::operator+=(const RGB& d) {
+    for (int i=0; i < 3; ++i) {
+        this->rgb[i] += d.rgb[i];
+    }
+    return *this;
+}
+
+float RGB::max() const {
+    return std::max({rgb[0], rgb[1], rgb[2]});
+}
+
 float max(const RGB& a) {
     return a.max();
+}
+
+bool RGB::valeCero() const {
+    for (float componente : this->rgb) {
+        if (componente != 0.0f) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool valeCero(const RGB& a) {
+    return a.valeCero();
 }
 
 ostream& operator<<(ostream& os, const RGB& r){

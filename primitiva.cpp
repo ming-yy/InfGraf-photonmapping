@@ -11,15 +11,19 @@
 #include <array>
 
 
-Primitiva::Primitiva(): coeficientes(BSDFs()), soyLuz(false) {}
+Primitiva::Primitiva(): coeficientes(BSDFs()), power(RGB()) {}
 
-Primitiva::Primitiva(const RGB& color, const string material, const bool _soyLuz) {
+Primitiva::Primitiva(const RGB& color, const string material, const RGB& _power) {
     this->coeficientes = BSDFs(color, material);
-    this->soyLuz = _soyLuz;
+    this->power = _power;
 }
 
 Primitiva::Primitiva(const RGB& color, const array<float, 3> kd, const array<float, 3> ks,
-                     const array<float, 3> kt, const bool _soyLuz) {
+                     const array<float, 3> kt, const RGB& _power) {
     this->coeficientes = BSDFs(color, kd, ks, kt);
-    this->soyLuz = _soyLuz;
+    this->power = _power;
+}
+
+bool Primitiva::soyFuenteDeLuz() const {
+    return !valeCero(this->power);
 }

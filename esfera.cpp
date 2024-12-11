@@ -5,20 +5,20 @@
 // Coms:   Práctica 3.2 de Informática Gráfica
 //*****************************************************************
 
+#include <cmath>
+#include <random>
 #include "esfera.h"
 
 
 Esfera::Esfera(): Primitiva(), centro(Punto()), radio(0.0f) {}
 
 Esfera::Esfera(const Punto& _centro, const float& _radio, const RGB& _reflectancia,
-                     const string _material, const bool _soyLuz) :
-               Primitiva(_reflectancia, _material, _soyLuz), centro(_centro), radio(_radio)  {}
+               const string _material, const RGB& _power) :
+               Primitiva(_reflectancia, _material, _power), centro(_centro), radio(_radio)  {}
 
 Esfera::Esfera(const Planeta& p) : Primitiva(), centro(p.centro), radio(p.radio) {}
 
-void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos,
-                          BSDFs& coefs, bool& choqueConLuz) const {
-
+void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) const {
     float a = modulo(rayo.d);
     a *= a;
     float b = 2 * dot(rayo.d, rayo.o - this->centro);
@@ -51,8 +51,6 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos,
         }
         
         coefs = this->coeficientes;
-        choqueConLuz = this->soyLuz;
- 
         // DEBUG
         //cout << "Hay 2 puntos de interseccion: " << endl;
         //cout << "t1 = " << t1 << " --> " << p1 << endl;
@@ -65,7 +63,6 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos,
         if (t > MARGEN_ERROR) {
             ptos.push_back(puntoInterseccion);
             coefs = this->coeficientes;
-            choqueConLuz = this->soyLuz;
         }
         // DEBUG
         //cout << "Hay 1 punto de interseccion (tngente): " << endl;
@@ -79,19 +76,38 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos,
 }
 
 bool Esfera::pertenece(const Punto& p0) const {
-    return false;
+    float distancia = modulo(p0 - this->centro);
+    return abs(distancia - this->radio) <= MARGEN_ERROR;
 }
 
 Direccion Esfera::getNormal(const Punto& punto) const {
     return normalizar(punto - centro);
 }
 
-bool Esfera::soyFuenteDeLuz() const {
-    return this->soyLuz;
+bool Esfera::puntoEsFuenteDeLuz(const Punto& punto) const {
+    return pertenece(punto) && soyFuenteDeLuz();
 }
 
-Punto Esfera::generarPuntoAleatorio() const {
-    return Punto();
+Punto Esfera::generarPuntoAleatorio(float& prob) const {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    std::uniform_real_distribution<float> distAngle(0.0f, 2.0f * M_PI);
+
+    // Genera dos ángulos aleatorios para coordenadas esféricas
+    float theta = acos(1.0f - 2.0f * dist(gen)); // Distribución uniforme en una esfera
+    float phi = distAngle(gen);
+
+    // Coordenadas esféricas --> cartesianas
+    float x = radio * sin(theta) * cos(phi);
+    float y = radio * sin(theta) * sin(phi);
+    float z = radio * cos(theta);
+
+    Punto puntoAleatorio(this->centro.coord[0] + x, this->centro.coord[1] + y, this->centro.coord[2] + z);
+    float areaSuperficie = 4.0f * M_PI * radio * radio;
+    prob = 1.0f / areaSuperficie;
+
+    return puntoAleatorio;
 }
 
 void Esfera::diHola() const {

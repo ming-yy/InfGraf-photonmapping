@@ -24,6 +24,9 @@ public:
     // Operación de suma de dos direcciones
     Direccion operator+(const Direccion& d) const;
     
+    // Operación de resta unaria (-direccion)
+    Direccion operator-() const;
+    
     // Operación de resta de dos direcciones
     Direccion operator-(const Direccion& d) const;
     

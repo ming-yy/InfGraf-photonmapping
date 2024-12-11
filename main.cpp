@@ -46,14 +46,17 @@ void liberarMemoriaDePrimitivas(vector<Primitiva*>& objetos) {
 
 void cajaDeCornell(){
     vector<Primitiva*> objetos;
-    objetos.push_back(new Plano(Direccion(1.0f, 0.0f, 0.0f), 1.0f, RGB({1.0f, 0.0f, 0.0f}), "muy_difuso", false)); // plano izquierdo, rojo
-    objetos.push_back(new Plano(Direccion(-1.0f, 0.0f, 0.0f), 1.0f, RGB({0.0f, 1.0f, 0.0f}), "muy_difuso", false)); // plano derecho, verde
-    objetos.push_back(new Plano(Direccion(0.0f, 1.0f, 0.0f), 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso", false)); // plano suelo, blanco
-    objetos.push_back(new Plano(Direccion(0.0f, -1.0f, 0.0f), 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso", false)); // plano techo, blanco
-    objetos.push_back(new Plano(Direccion(0.0f, 0.0f, -1.0f), 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso", false)); // plano fondo, blanco
-    objetos.push_back(new Esfera(Punto(-0.5f, -0.7f, 0.25f), 0.3f, RGB({0.89f, 0.45f, 0.82f}), "plastico", false)); // esfera izquierda, rosa
-    //objetos.push_back(new Esfera(Punto(0.5f, -0.7f, -0.25f), 0.3f, RGB({0.7f, 1.0f, 1.0f}), "dielectrico", false)); // esfera derecha, azul
-    objetos.push_back(new Esfera(Punto(0.5f, -0.7f, -0.25f), 0.3f, RGB({1.0f, 1.0f, 1.0f}), "cristal", false)); // esfera derecha, azul
+    objetos.push_back(new Plano({1.0f, 0.0f, 0.0f}, 1.0f, RGB({1.0f, 0.0f, 0.0f}), "muy_difuso")); // plano izquierdo, rojo
+    objetos.push_back(new Plano({-1.0f, 0.0f, 0.0f}, 1.0f, RGB({0.0f, 1.0f, 0.0f}), "muy_difuso")); // plano derecho, verde
+    objetos.push_back(new Plano({0.0f, 1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano suelo, blanco
+    objetos.push_back(new Plano({0.0f, -1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano techo, blanco
+    objetos.push_back(new Plano({0.0f, -1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso",
+                                  {1,1,1}, -0.5, 0.5, {0.0f, 0.0f, 0.25f})); // plano techo, blanco
+    objetos.push_back(new Plano({0.0f, 0.0f, -1.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano fondo, blanco
+    //objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.89f, 0.45f, 0.82f}), "plastico")); // esfera izquierda, rosa
+    objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "plastico")); // esfera izquierda, azul
+    //objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "dielectrico")); // esfera derecha, azul
+    objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({1.0f, 1.0f, 1.0f}), "cristal")); // esfera derecha, azul
     vector<LuzPuntual> luces;
 
     RGB potencia(1.0f, 1.0f, 1.0f);
@@ -72,19 +75,20 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    // Zoom esfera izquierda
-    Camara cam3 = Camara({-0.25f, -0.5f, -0.5f},
+    // Zoom esfera izquierda parte derecha
+    Camara cam3 = Camara({0.0f, 1.0f, -1.0f},
                         {0.0f, 0.0f, 3.0f},
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
     const unsigned maxRebotes = 4;
-    const unsigned rpp = 128;
+    const unsigned rpp = 32;
     const unsigned numRayosMontecarlo = 1;
     const bool printPixelesProcesados = true;
     
     auto inicio = std::chrono::high_resolution_clock::now();
-    renderizarEscena(cam, 256, 256, cornell, "cornell", rpp, maxRebotes, numRayosMontecarlo, printPixelesProcesados);
+    //renderizarEscena(cam, 256, 256, cornell, "cornell", rpp, maxRebotes, numRayosMontecarlo, printPixelesProcesados);
+    renderizarEscenaConThreads(cam, 256, 256, cornell, "cornell", rpp, maxRebotes, numRayosMontecarlo, printPixelesProcesados);
     auto fin = std::chrono::high_resolution_clock::now();
     printTiempo(inicio, fin);
 
@@ -102,7 +106,7 @@ int main() {
     int test = 12;
     
     if (test == 1) {
-        array<float, 3> arrCoord = {4.44, 5.55, 6.66};
+        array<float, 3> arrCoord = {4.44,5.55,6.66};
         /*
         // PRUEBA 1.5 - PUNTODIRECCION
         // quitada porque ahora es abstracta y no se puede instanciar
@@ -432,8 +436,7 @@ int main() {
         sh_ptr<Punto> pto = std::make_shared<Punto>(1,0,0);
         vector<Punto> ptosIntersec;
         sh_ptr<Esfera> esfera = std::make_shared<Esfera>(*planeta);
-        bool choqueConLuz = false;
-        esfera->interseccion(Rayo(*dir, *pto), ptosIntersec, emision, choqueConLuz);
+        esfera->interseccion(Rayo(*dir, *pto), ptosIntersec, emision);
 
         if (!ptosIntersec.empty()) {
             for (Punto p : ptosIntersec) {
@@ -446,7 +449,7 @@ int main() {
         cout << "---" << endl;
         ptosIntersec.clear();
         Esfera esfera2 = Esfera(Punto(0,0,0), 1, RGB());
-        esfera2.interseccion(Rayo(Direccion(1,0,0), Punto(1,0,0)), ptosIntersec, emision, choqueConLuz);
+        esfera2.interseccion(Rayo(Direccion(1,0,0), Punto(1,0,0)), ptosIntersec, emision);
 
         if (!ptosIntersec.empty()) {
             for (Punto p : ptosIntersec) {
@@ -465,7 +468,7 @@ int main() {
         float distanciaPlano = -5.0f;   // El plano está a 5 unidades del origen UCS
         sh_ptr<Plano> plano = std::make_shared<Plano>(*normalPlano, distanciaPlano);
         //cout << *plano << endl;
-        plano->interseccion(Rayo(*dir, *pto), ptosIntersec, emision, choqueConLuz);
+        plano->interseccion(Rayo(*dir, *pto), ptosIntersec, emision);
 
         if (!ptosIntersec.empty()) {
             for (Punto p : ptosIntersec) {
@@ -498,7 +501,7 @@ int main() {
         Punto origenRayo(arrOrigenRayo);
         Direccion direccionRayo(arrDireccionRayo);
 
-        triangulo.interseccion(Rayo(direccionRayo, origenRayo), ptosIntersec, emision, choqueConLuz);
+        triangulo.interseccion(Rayo(direccionRayo, origenRayo), ptosIntersec, emision);
 
         if (!ptosIntersec.empty()) {
             for (Punto p : ptosIntersec) {
