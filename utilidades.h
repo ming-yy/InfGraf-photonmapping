@@ -23,7 +23,7 @@
 // Constantes
 constexpr float MARGEN_ERROR = 1e-6f;          // Para calcular intersecciones
 constexpr float GRAD_A_RAD = 3.1415926535898f / 180;
-//const double M_PI = 3.14159265358979323846;
+const double M_PI = 3.14159265358979323846;
 
 // Tipos o abreviaturas
 template<typename T>

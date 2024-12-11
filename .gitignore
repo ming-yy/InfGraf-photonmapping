@@ -1,0 +1,9 @@
+*.o
+.DS_Store
+*.exe
+/ppms
+.vscode
+.DS_Store
+*.ppm
+*.ppm#
+.vscode/settings.json
