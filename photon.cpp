@@ -22,33 +22,3 @@ Direccion Photon::getDirIncidente() const {
 RGB Photon::getFlujo() const {
     return flujo;
 }
-
-float PhotonAxisPosition::operator()(const Photon& p, size_t i) const {
-    return p.getCoord(i);
-}
-
-PhotonMap generarPhotonMap(vector<Photon>& fotonVec){
-    list<Photon> photons(fotonVec.begin(), fotonVec.end());
-    return PhotonMap(photons, PhotonAxisPosition());
-}
-
-void fotonesCercanos(PhotonMap& photonMap, array<float, 3>& coordBusqueda, float radio,
-                        unsigned long numFotones, vector<const Photon*>& fotonesCercanos){
-    fotonesCercanos = photonMap.nearest_neighbors(coordBusqueda,
-                                                    numFotones,
-                                                    radio);
-}
-
-void fotonesCercanosPorNumFotones(PhotonMap& photonMap, array<float, 3>& coordBusqueda,
-                        unsigned long numFotones, vector<const Photon*>& fotonesCercanos){
-    fotonesCercanos = photonMap.nearest_neighbors(coordBusqueda,
-                                                    numFotones,
-                                                    std::numeric_limits<float>::infinity());
-}
-
-void fotonesCercanosPorRadio(PhotonMap& photonMap, array<float, 3>& coordBusqueda,
-                                float radio, vector<const Photon*>& fotonesCercanos){
-    fotonesCercanos = photonMap.nearest_neighbors(coordBusqueda,
-                                                std::numeric_limits<unsigned long>::max(),
-                                                radio);
-}
