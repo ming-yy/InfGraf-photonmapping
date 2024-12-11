@@ -49,8 +49,8 @@ RGB RGB::operator/(const float escalar) const {
 }
 
 RGB& RGB::operator=(const RGB& r) {
-    if (this != &r) {  // Evitar auto-asignación
-        this->rgb = r.rgb;  // Asigna las coordenadas
+    if (this != &r) {
+        this->rgb = r.rgb;
     }
     return *this;
 }

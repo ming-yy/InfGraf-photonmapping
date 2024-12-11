@@ -92,11 +92,10 @@ Punto Esfera::generarPuntoAleatorio(float& prob) const {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-    std::uniform_real_distribution<float> distAngle(0.0f, 2.0f * M_PI);
 
     // Genera dos ángulos aleatorios para coordenadas esféricas
-    float theta = acos(1.0f - 2.0f * dist(gen)); // Distribución uniforme en una esfera
-    float phi = distAngle(gen);
+    float theta = acos(2.0f * dist(gen) - 1.0f); // Distribución uniforme en una esfera
+    float phi = 2 * M_PI * dist(gen);
 
     // Coordenadas esféricas --> cartesianas
     float x = radio * sin(theta) * cos(phi);
