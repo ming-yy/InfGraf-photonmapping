@@ -81,14 +81,14 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    const unsigned maxRebotes = 4;
+    const unsigned fotonesPorRandomWalk = 4;
     const unsigned rpp = 32;
-    const unsigned numRayosMontecarlo = 1;
+    const unsigned numFotones = 50;
     const bool printPixelesProcesados = true;
     
     auto inicio = std::chrono::high_resolution_clock::now();
-    //renderizarEscena(cam, 256, 256, cornell, "cornell", rpp, maxRebotes, numRayosMontecarlo, printPixelesProcesados);
-    renderizarEscenaConThreads(cam, 256, 256, cornell, "cornell", rpp, maxRebotes, numRayosMontecarlo, printPixelesProcesados);
+    renderizarEscena(cam, 256, 256, cornell, "cornell", rpp, numFotones, fotonesPorRandomWalk, printPixelesProcesados);
+    //renderizarEscenaConThreads(cam, 256, 256, cornell, "cornell", rpp, numFotones, fotonesPorRandomWalk, printPixelesProcesados);
     auto fin = std::chrono::high_resolution_clock::now();
     printTiempo(inicio, fin);
 

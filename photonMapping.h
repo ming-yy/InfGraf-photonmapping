@@ -9,6 +9,15 @@
 #include "camara.h"
 #include "escena.h"
 #include "photonMap.h"
+#include <optional>
+
+
+enum TipoRayo {
+    ABSORBENTE = -1,
+    DIFUSO = 0,
+    ESPECULAR = 1,
+    REFRACTANTE = 2
+};
 
 void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,

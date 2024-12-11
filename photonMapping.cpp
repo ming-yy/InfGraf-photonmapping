@@ -69,19 +69,135 @@ Direccion generarDireccionAleatoriaEsfera() {
     return normalizar(Direccion(x, y, z));
 }
 
-void randomWalk(vector<Photon>&vecFotones, const Escena& escena, const Rayo& wi, const RGB& flujo){
-    // TODO: Intersecar, calcular radiancia, guardar foton(radiancia, wi, flujo)
-    //       repetir recursivamente como en la indirecta
+Direccion calcDirEspecular(const Direccion& wo, const Direccion& n) {
+    return normalizar(wo - n * 2.0f * dot(wo, n));
+}
+
+std::optional<Direccion> calcDirRefractante(const Direccion& wo, const Direccion& normal,
+                                            const float ni, const float nr) {
+    Direccion woo = wo * (-1);      // woo apunta hacia la cámara
+    Direccion n = normal;
+    float eta = nr / ni;
+    float cosThetaI = dot(n, woo);
+    if (cosThetaI < 0) {    // Rayo entrando al material
+        eta = 1 / eta;
+        cosThetaI = - cosThetaI;
+        n = n * (-1);
+    }
+    float sin2ThetaI = max(0.0f, 1 - cosThetaI * cosThetaI);
+    float sin2ThetaT = sin2ThetaI / (eta * eta);
+    if (sin2ThetaT >= 1) {      // Reflexión interna total
+        return std::nullopt;
+    }
+    
+    float cosThetaT = sqrt(max(0.0f, 1.0f - sin2ThetaT));
+    Direccion wt = (woo * (-1)) / eta + n * (cosThetaI / eta - cosThetaT);
+    return normalizar(wt);
+    
+}
+
+Rayo obtenerRayoRuletaRusa(const TipoRayo tipoRayo, const Punto& origen, const Direccion& wo,
+                           const Direccion& normal, float& probRayo) {
+    Rayo wi;
+    wi.o = origen;
+    probRayo = 1.0f;
+    if (tipoRayo == DIFUSO) {
+        wi.d = generarDireccionAleatoriaHemiesfera(normal, probRayo);
+    } else if (tipoRayo == ESPECULAR) {
+        wi.d = calcDirEspecular(wo, normal);
+    } else if (tipoRayo == REFRACTANTE){
+        auto wt = calcDirRefractante(wo, normal, 1.0f, 1.5f);
+        if (wt) {       // Hay refracción
+            wi.d = *wt;
+        } else {        // Reflexión interna total
+            wi.d = calcDirEspecular(wo, normal);
+        }
+    }
+    return wi;
+}
+
+TipoRayo dispararRuletaRusa(const BSDFs& coefs, float& probRuleta) {
+    float maxKD = max(coefs.kd);
+    float maxKS = max(coefs.ks);
+    float maxKT = max(coefs.kt);
+    float total = 1.0f;
+
+    float probDifuso = maxKD / total;
+    float probEspecular = maxKS / total;
+    float probRefractante = maxKT / total;
+    float probAbsorbente = 1.0f - probDifuso - probEspecular - probRefractante;
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    float bala = dist(gen);     // Random float entre (0,1)
+
+    if (bala <= probDifuso) {
+        probRuleta = probDifuso;
+        return DIFUSO;  // Rayo difuso
+    } else if (bala <= probDifuso + probEspecular) {
+        probRuleta = probEspecular;
+        return ESPECULAR;  // Rayo especular
+    } else if (bala <= probDifuso + probEspecular + probRefractante) {
+        probRuleta = probRefractante;
+        return REFRACTANTE;  // Rayo refractante
+    } else {
+        return ABSORBENTE;   // Absorbente
+    }
+}
+
+void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
+                            int &fotonesRestantes, int &rebotesRestantes, const RGB& flujo,
+                            const Punto& origen, const Direccion &wo,
+                            const BSDFs &coefsOrigen, const Direccion& normal){
+    if(rebotesRestantes <= 0 || fotonesRestantes <= 0){
+        return; // TERMINAL: se han terminado los fotones totales o
+                //           se ha llegado al max de fotones en este randomWalk
+    }
+
+    float probRuleta;
+    TipoRayo tipoRayo = dispararRuletaRusa(coefsOrigen, probRuleta);
+
+    if (tipoRayo == ABSORBENTE) {
+        return; // TERMINAL: rayo absorbente
+
+    } else if(tipoRayo == DIFUSO){
+        // TODO: si es difuso, calcular flujo (radiancia) del punto de origen y guardar foton
+        //          restar contadores rebotesRestantes y fotonesRestantes
+    }
+
+    float probRayo;     // Ojo! La probabilidad es para la siguiente llamada recursiva pq es wi, no wo
+    Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo, normal, probRayo);
+
+
+        //  TODO: FALTA TERMINAR
+
+}
+
+void comenzarRandomWalk(vector<Photon>&vecFotones, const Escena& escena, 
+                const Rayo& wi, int &fotonesRestantes, 
+                int &rebotesRestantes, const RGB& flujo){
+    
+    Punto ptoIntersec;
+    BSDFs coefsPtoInterseccion;
+    Direccion normal;
+
+    if(escena.interseccion(wi, coefsPtoInterseccion, ptoIntersec, normal)){
+        recursividadRandomWalk(vecFotones, escena, fotonesRestantes, rebotesRestantes, 
+                                flujo, ptoIntersec, wi.d, coefsPtoInterseccion, normal);
+    }
 }
 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
-void anadirFotonesDeLuz(vector<Photon>& vecFotones, const unsigned numFotones, const LuzPuntual& luz, const Escena& escena){
-    RGB flujoPorFoton = (luz.p * 4 * M_PI) / numFotones;
-
-    for(unsigned i = 0; i < numFotones; i++){
+void anadirFotonesDeLuz(vector<Photon>& vecFotones, const unsigned totalFotones, 
+                        const LuzPuntual& luz, const Escena& escena, unsigned fotonesPorRandomWalk){
+    RGB flujoPorRandomWalk = (luz.p * 4 * M_PI) / totalFotones;
+    int fotonesRestantes = static_cast<int>(totalFotones);
+    while(fotonesRestantes > 0){
+        int rebotesRestantes = static_cast<int>(fotonesPorRandomWalk);
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
-        randomWalk(vecFotones, escena, wi, flujoPorFoton);
+        comenzarRandomWalk(vecFotones, escena, wi, fotonesRestantes, rebotesRestantes, flujoPorRandomWalk);
     }
 }
 
@@ -95,12 +211,12 @@ RGB calcularPotenciaTotal(const vector<LuzPuntual>& luces){
     return total;
 }
 
-void generarFotones(vector<Photon>& vecFotones, const unsigned totalFotones, const Escena& escena){
+void generarFotones(vector<Photon>& vecFotones, const unsigned totalFotones, const unsigned fotonesPorRandomWalk, const Escena& escena){
     RGB potenciaTotal = calcularPotenciaTotal(escena.luces);
 
     for(auto& luz : escena.luces){
         unsigned numFotonesProporcionales = totalFotones * (max(luz.p) / max(potenciaTotal));
-        anadirFotonesDeLuz(vecFotones, numFotonesProporcionales, luz, escena);
+        anadirFotonesDeLuz(vecFotones, numFotonesProporcionales, luz, escena, fotonesPorRandomWalk);
     }
 }
 
@@ -108,37 +224,37 @@ void generarFotones(vector<Photon>& vecFotones, const unsigned totalFotones, con
                       
 void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
-                      const unsigned maxRebotes, const unsigned numRayosMontecarlo, const unsigned numFotones,
+                      const unsigned totalFotones, const unsigned fotonesPorRandomWalk,
                       const bool printPixelesProcesados) {
     float anchoPorPixel = camara.calcularAnchoPixel(numPxlsAncho);
     float altoPorPixel = camara.calcularAltoPixel(numPxlsAlto);
    
     unsigned totalPixeles = numPxlsAlto * numPxlsAncho;
-    if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
-
+    //if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
 
     vector<Photon> vecFotones;
 
-    generarFotones(vecFotones, numFotones, escena);
+    generarFotones(vecFotones, totalFotones, fotonesPorRandomWalk, escena);
 
     PhotonMap mapaFotones = std::move(generarPhotonMap(vecFotones));
-
-
-
 
 
     // Inicializado todo a color negro
     vector<vector<RGB>> coloresEscena(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 
+    
+
+    //  TODO: FALTA GENERAR MAPA DE COLORES (PASO 2 DE PHOTONMAPPING)
+
 
     /*
     if(rpp == 1){
         renderizarEscena1RPP(camara, numPxlsAncho, numPxlsAlto, escena, anchoPorPixel,
-                             altoPorPixel, maxRebotes, numRayosMontecarlo, coloresEscena,
+                             altoPorPixel, fotonesPorRandomWalk, numRayosMontecarlo, coloresEscena,
                              totalPixeles, printPixelesProcesados);
     } else {
         renderizarEscenaConAntialiasing(camara, numPxlsAncho, numPxlsAlto, escena, anchoPorPixel,
-                                        altoPorPixel, maxRebotes, numRayosMontecarlo, coloresEscena,
+                                        altoPorPixel, fotonesPorRandomWalk, numRayosMontecarlo, coloresEscena,
                                         printPixelesProcesados, totalPixeles, rpp);
     }
     */
