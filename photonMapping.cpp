@@ -146,8 +146,31 @@ TipoRayo dispararRuletaRusa(const BSDFs& coefs, float& probRuleta) {
     }
 }
 
-void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            int &fotonesRestantes, int &rebotesRestantes, const RGB& flujo,
+float calcCosenoAnguloIncidencia(const Direccion& d, const Direccion& n){
+    return abs(dot(n, d / modulo(d)));
+}
+
+RGB calcBrdfDifusa(const RGB& kd){
+    return kd / M_PI;
+}
+
+RGB nextEventEstimation(const Punto& p0, const Direccion& normal, const Escena& escena,
+                        const RGB& kd, const LuzPuntual& luz) {
+
+    if (!escena.luzIluminaPunto(p0, luz)) {
+        return RGB(0.0f, 0.0f, 0.0f);  // Si el punto no está iluminado
+    }
+
+    // Ecuación de render
+    Direccion dirIncidente = luz.c - p0;
+    float cosAnguloIncidencia = calcCosenoAnguloIncidencia(dirIncidente, normal);
+    RGB reflectanciaBrdfDifusa = calcBrdfDifusa(kd);
+    RGB radianciaIncidente = luz.p / (modulo(dirIncidente) * modulo(dirIncidente));
+    return radianciaIncidente * (reflectanciaBrdfDifusa * cosAnguloIncidencia);
+}
+
+void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const LuzPuntual& luz,
+                            int &fotonesRestantes, int &rebotesRestantes, const RGB& flujoInicidente,
                             const Punto& origen, const Direccion &wo,
                             const BSDFs &coefsOrigen, const Direccion& normal){
     if(rebotesRestantes <= 0 || fotonesRestantes <= 0){
@@ -162,6 +185,9 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
         return; // TERMINAL: rayo absorbente
 
     } else if(tipoRayo == DIFUSO){
+        // Solo luces puntuales
+        RGB flujoNEE = nextEventEstimation(origen, normal, escena, coefsOrigen.kd, luz);
+
         // TODO: si es difuso, calcular flujo (radiancia) del punto de origen y guardar foton
         //          restar contadores rebotesRestantes y fotonesRestantes
     }
@@ -174,7 +200,7 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
 
 }
 
-void comenzarRandomWalk(vector<Photon>&vecFotones, const Escena& escena, 
+void comenzarRandomWalk(vector<Photon>&vecFotones, const Escena& escena, const LuzPuntual& luz,
                 const Rayo& wi, int &fotonesRestantes, 
                 int &rebotesRestantes, const RGB& flujo){
     
@@ -183,7 +209,7 @@ void comenzarRandomWalk(vector<Photon>&vecFotones, const Escena& escena,
     Direccion normal;
 
     if(escena.interseccion(wi, coefsPtoInterseccion, ptoIntersec, normal)){
-        recursividadRandomWalk(vecFotones, escena, fotonesRestantes, rebotesRestantes, 
+        recursividadRandomWalk(vecFotones, escena, luz, fotonesRestantes, rebotesRestantes, 
                                 flujo, ptoIntersec, wi.d, coefsPtoInterseccion, normal);
     }
 }
@@ -197,7 +223,7 @@ void anadirFotonesDeLuz(vector<Photon>& vecFotones, const unsigned totalFotones,
     while(fotonesRestantes > 0){
         int rebotesRestantes = static_cast<int>(fotonesPorRandomWalk);
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
-        comenzarRandomWalk(vecFotones, escena, wi, fotonesRestantes, rebotesRestantes, flujoPorRandomWalk);
+        comenzarRandomWalk(vecFotones, escena, luz, wi, fotonesRestantes, rebotesRestantes, flujoPorRandomWalk);
     }
 }
 
