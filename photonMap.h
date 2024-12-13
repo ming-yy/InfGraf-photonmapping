@@ -4,6 +4,7 @@
 // Date:   diciembre 2024
 // Coms:   Práctica 5 de Informática Gráfica
 //*****************************************************************
+#pragma once
 
 #include "kdtree.h"
 #include "photon.h"

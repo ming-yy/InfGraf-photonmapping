@@ -9,7 +9,6 @@
 #include "base.h"
 #include <random>
 
-
 void getCoordenadasCartesianas(const float azimut, const float inclinacion,
                                 float& x, float& y, float& z) {
     float sinAzim = static_cast<float>(sin(float(azimut)));
@@ -154,103 +153,128 @@ RGB calcBrdfDifusa(const RGB& kd){
     return kd / M_PI;
 }
 
-RGB nextEventEstimation(const Punto& p0, const Direccion& normal, const Escena& escena,
-                        const RGB& kd, const LuzPuntual& luz) {
-
-    if (!escena.luzIluminaPunto(p0, luz)) {
-        return RGB(0.0f, 0.0f, 0.0f);  // Si el punto no está iluminado
-    }
-
-    // Ecuación de render
-    Direccion dirIncidente = luz.c - p0;
-    float cosAnguloIncidencia = calcCosenoAnguloIncidencia(dirIncidente, normal);
-    RGB reflectanciaBrdfDifusa = calcBrdfDifusa(kd);
-    RGB radianciaIncidente = luz.p / (modulo(dirIncidente) * modulo(dirIncidente));
-    return radianciaIncidente * (reflectanciaBrdfDifusa * cosAnguloIncidencia);
-}
-
-void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const LuzPuntual& luz,
-                            int &fotonesRestantes, int &rebotesRestantes, const RGB& flujoInicidente,
-                            const Punto& origen, const Direccion &wo,
+void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
+                            int &fotonesRestantesLuz, int &fotonesRestantesRW, const RGB& flujoIncidente,
+                            const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal){
-    if(rebotesRestantes <= 0 || fotonesRestantes <= 0){
-        return; // TERMINAL: se han terminado los fotones totales o
-                //           se ha llegado al max de fotones en este randomWalk
+    
+    cout << " ++ RECURSIVIDAD: fotonesRestantesLuz = " << fotonesRestantesLuz << ", fotonesRestantesRW = " << fotonesRestantesRW << endl;
+    if(fotonesRestantesRW <= 0 || fotonesRestantesLuz <= 0){
+        cout << " -- Acaba recurisividad: " << endl;
+        cout << "NO QUEDAN REBOTES DEL RANDOMWALK: " << (fotonesRestantesRW <= 0) << endl;
+        cout << "O NO QUEDAN FOTONES EN LA LUZ: " << (fotonesRestantesLuz <= 0) << endl;
+        return; // TERMINAL: se ha llegado al max de fotones en este randomWalk o 
+                //           se han terminado los fotones asignados a esa luz       
     }
 
     float probRuleta;
     TipoRayo tipoRayo = dispararRuletaRusa(coefsOrigen, probRuleta);
 
     if (tipoRayo == ABSORBENTE) {
+        cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
         return; // TERMINAL: rayo absorbente
 
     } else if(tipoRayo == DIFUSO){
         // Solo luces puntuales
-        RGB flujoNEE = nextEventEstimation(origen, normal, escena, coefsOrigen.kd, luz);
-
-        // TODO: si es difuso, calcular flujo (radiancia) del punto de origen y guardar foton
-        //          restar contadores rebotesRestantes y fotonesRestantes
+        cout << "Rayo difuso, metemos foton " << Photon(origen.coord, wo_d, flujoIncidente) << endl;
+        vecFotones.push_back(Photon(origen.coord, wo_d, flujoIncidente));
+        fotonesRestantesRW--;
+        fotonesRestantesLuz--;
+    } else if(tipoRayo == ESPECULAR){
+        cout << "Rayo especular, seguimos" << endl;
+    } else if(tipoRayo == REFRACTANTE){
+        cout << "Rayo refractante, seguimos" << endl;
+    } else {
+        cout << "Rayo ??? que" << endl;
     }
 
+
     float probRayo;     // Ojo! La probabilidad es para la siguiente llamada recursiva pq es wi, no wo
-    Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo, normal, probRayo);
+    Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo_d, normal, probRayo);
 
+    BSDFs coefsPtoIntersec;
+    Punto ptoIntersec;
+    Direccion nuevaNormal;
+    bool hayIntersec = escena.interseccion(wi, coefsPtoIntersec, ptoIntersec, nuevaNormal);
 
-        //  TODO: FALTA TERMINAR
+    if (!hayIntersec) {
+        cout << " -- Acaba recurisividad: Rayo no interseca con nada" << endl;
+        return; // TERMINAL: el siguiente rayo no interseca con nada 
+    }
 
+    recursividadRandomWalk(vecFotones, escena, fotonesRestantesLuz, fotonesRestantesRW, 
+                            flujoIncidente, ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal);
 }
 
-void comenzarRandomWalk(vector<Photon>&vecFotones, const Escena& escena, const LuzPuntual& luz,
-                const Rayo& wi, int &fotonesRestantes, 
-                int &rebotesRestantes, const RGB& flujo){
+void comenzarRandomWalk(vector<Photon>&vecFotones, const Escena& escena, const Rayo& wi,
+                        int &fotonesRestantesLuz, int &fotonesRestantesRW, const RGB& flujo){
     
     Punto ptoIntersec;
     BSDFs coefsPtoInterseccion;
     Direccion normal;
 
     if(escena.interseccion(wi, coefsPtoInterseccion, ptoIntersec, normal)){
-        recursividadRandomWalk(vecFotones, escena, luz, fotonesRestantes, rebotesRestantes, 
-                                flujo, ptoIntersec, wi.d, coefsPtoInterseccion, normal);
+        cout << endl << "Comienza recursividad..." << endl;
+        cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
+        cout << " y normal " <<  normal << endl;
+        recursividadRandomWalk(vecFotones, escena, fotonesRestantesLuz, fotonesRestantesRW,
+                                        flujo, ptoIntersec, wi.d, coefsPtoInterseccion, normal);
     }
 }
 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
-void anadirFotonesDeLuz(vector<Photon>& vecFotones, const unsigned totalFotones, 
-                        const LuzPuntual& luz, const Escena& escena, unsigned fotonesPorRandomWalk){
-    RGB flujoPorRandomWalk = (luz.p * 4 * M_PI) / totalFotones;
-    int fotonesRestantes = static_cast<int>(totalFotones);
-    while(fotonesRestantes > 0){
-        int rebotesRestantes = static_cast<int>(fotonesPorRandomWalk);
+void anadirFotonesDeLuz(vector<Photon>& vecFotones, const int numFotonesLuz, 
+                        const LuzPuntual& luz, const Escena& escena, const int maxFotonesPorRandomWalk){
+    
+    RGB flujoPorFoton = (luz.p * 4 * M_PI) / numFotonesLuz;
+    cout << "Flujo por foton: " << flujoPorFoton << endl;
+    int fotonesRestantesLuz = numFotonesLuz;
+
+    while(fotonesRestantesLuz > 0){
+        int fotonesRestantesRW = maxFotonesPorRandomWalk;
+        cout << "Nuevo random path, fotonesLuz restantes = " << fotonesRestantesLuz;
+        cout << ", fotonesRW restantes = " << fotonesRestantesRW  << endl;
+
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
-        comenzarRandomWalk(vecFotones, escena, luz, wi, fotonesRestantes, rebotesRestantes, flujoPorRandomWalk);
+        cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
+
+        comenzarRandomWalk(vecFotones, escena, wi, fotonesRestantesLuz,
+                            fotonesRestantesRW, flujoPorFoton);
     }
 }
 
-RGB calcularPotenciaTotal(const vector<LuzPuntual>& luces){
-    RGB total;
-
+float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
+    float total;
     for(auto& luz : luces){
-        total += luz.p;
+        total += max(luz.p);
     }
-
     return total;
 }
 
-void generarFotones(vector<Photon>& vecFotones, const unsigned totalFotones, const unsigned fotonesPorRandomWalk, const Escena& escena){
-    RGB potenciaTotal = calcularPotenciaTotal(escena.luces);
+void generarFotones(vector<Photon>& vecFotones, const int totalFotones, 
+                        const int maxFotonesPorRandomWalk, const Escena& escena){
 
+    cout << "Generando " << totalFotones << " fotones en total..." << endl;
+    float potenciaTotal = calcularPotenciaTotal(escena.luces);
+    cout << "Potencia total: " << potenciaTotal << endl;
     for(auto& luz : escena.luces){
-        unsigned numFotonesProporcionales = totalFotones * (max(luz.p) / max(potenciaTotal));
-        anadirFotonesDeLuz(vecFotones, numFotonesProporcionales, luz, escena, fotonesPorRandomWalk);
+        int numFotonesProporcionales = totalFotones * (max(luz.p) / potenciaTotal);
+        cout << endl << "Generando " << numFotonesProporcionales << " fotones para luz..." << endl;
+        anadirFotonesDeLuz(vecFotones, numFotonesProporcionales, luz, escena, maxFotonesPorRandomWalk);
     }
 }
 
+void printVectorFotones(const vector<Photon>& vecFotones){
+    for (auto& foton : vecFotones){
+        cout << foton << endl;
+    }
+}
 
                       
 void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
-                      const unsigned totalFotones, const unsigned fotonesPorRandomWalk,
+                      const int totalFotones, const int maxFotonesPorRandomWalk,
                       const bool printPixelesProcesados) {
     float anchoPorPixel = camara.calcularAnchoPixel(numPxlsAncho);
     float altoPorPixel = camara.calcularAltoPixel(numPxlsAlto);
@@ -260,7 +284,9 @@ void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlt
 
     vector<Photon> vecFotones;
 
-    generarFotones(vecFotones, totalFotones, fotonesPorRandomWalk, escena);
+    generarFotones(vecFotones, totalFotones, maxFotonesPorRandomWalk, escena);
+
+    printVectorFotones(vecFotones);
 
     PhotonMap mapaFotones = std::move(generarPhotonMap(vecFotones));
 

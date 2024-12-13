@@ -7,18 +7,19 @@
 
 #include "photon.h"
 
-Photon::Photon(array<float, 3>& _coord, Direccion _wi, RGB _flujo) :
+Photon::Photon(const array<float, 3>& _coord, const Direccion& _wi, const RGB& _flujo) :
                                 coord(_coord), wi(_wi), flujo(_flujo){}
 
-
 float Photon::getCoord(size_t i) const {
+    if(i < 0 || i > 2) {
+        cout << "Indice de coordenadas del foton fuera de rango" << endl;
+    }
     return coord[i];
 }
 
-Direccion Photon::getDirIncidente() const {
-    return wi;
-}
-
-RGB Photon::getFlujo() const {
-    return flujo;
+ostream& operator<<(ostream& os, const Photon& p)
+{
+    os << "Foton - Coord = (" << p.getCoord(0) << ", " << p.getCoord(1) << ", " << p.getCoord(2);
+    os << ", Dir.Incidente = " << p.wi << ", Flujo = " << p.flujo << endl;
+    return os;
 }

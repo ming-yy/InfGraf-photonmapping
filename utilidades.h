@@ -23,7 +23,7 @@
 // Constantes
 constexpr float MARGEN_ERROR = 1e-6f;          // Para calcular intersecciones
 constexpr float GRAD_A_RAD = 3.1415926535898f / 180;
-const double M_PI = 3.14159265358979323846;
+//const double M_PI = 3.14159265358979323846;
 constexpr int NUM_MUESTRAS_LUZ_AREA = 50;
 
 // Tipos o abreviaturas
@@ -33,7 +33,7 @@ using init_list = std::initializer_list<T>;
 template<typename T>
 using sh_ptr = std::shared_ptr<T>;
 
-// using std::abs;    //por si no funciona <cmath>
+using std::abs;    //por si no funciona <cmath>
 using std::array;
 using std::cerr;
 using std::copy;

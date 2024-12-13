@@ -4,6 +4,7 @@
 // Date:   diciembre 2024
 // Coms:   Práctica 5 de Informática Gráfica
 //*****************************************************************
+#pragma once
 
 #include "utilidades.h"
 #include "direccion.h"
@@ -14,16 +15,19 @@
 // <wi> representa la direccion incidente de donde viene la luz
 // <flujo> representa la cantidad de energia luminosa que viene de la direccion incidente
 class Photon {
-    array<float, 3> coord;
-    Direccion wi;
-    RGB flujo;
+    
     
     public:
-        // Constructor de Photon
-        Photon(array<float, 3>& _coord, Direccion _wi, RGB _flujo);
+        array<float, 3> coord;
+        Direccion wi;
+        RGB flujo;
 
-        // Getters de Photon
+        // Constructor de Photon
+        Photon(const array<float, 3>& _coord, const Direccion& _wi, const RGB& _flujo);
+
+        // Getter que devuelve la coordenada en el indice <i> de Photon
         float getCoord(size_t i) const;
-        Direccion getDirIncidente() const;
-        RGB getFlujo() const;
+        
+        // Función para mostrar por pantalla el rayo
+        friend ostream& operator<<(ostream& os, const Photon& pd);
 };
