@@ -254,6 +254,8 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
 
 void generarFotones(vector<Photon>& vecFotones, const int totalFotones, 
                         const int maxFotonesPorRandomWalk, const Escena& escena){
+    
+    // OJO: igual hay que cambiar numFotones en algun sitio (dipos: "despues de randomWalks ajustar S")
 
     cout << "Generando " << totalFotones << " fotones en total..." << endl;
     float potenciaTotal = calcularPotenciaTotal(escena.luces);
