@@ -45,6 +45,12 @@ public:
     // Operación de +=
     RGB& operator+=(const RGB& d);
     
+    // Función que devuelve la multiplicación entre escalar por cada componente rgb de <color>
+    friend RGB operator*(const float escalar, const RGB& color);
+    
+    // Función para calcular el módulo del rgb
+    friend float modulo(const RGB& r);
+    
     // Función que devuelve el valor máximo del RGB
     friend float max(const RGB& a);
     
@@ -54,6 +60,9 @@ public:
     friend ostream& operator<<(ostream& os, const RGB& r);
 
 private:
+    // Método privado para calcular el módulo del rgb
+    float modulo() const;
+    
     // Método privado que devuelve el mayor valor de entre los 3 (R, G o B)
     float max() const;
     

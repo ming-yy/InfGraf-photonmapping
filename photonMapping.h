@@ -10,6 +10,9 @@
 #include "camara.h"
 #include "escena.h"
 #include "photonMap.h"
+#include "photonMapping.h"
+#include "base.h"
+#include <random>
 #include <optional>
 
 
@@ -20,16 +23,6 @@ enum TipoRayo {
     REFRACTANTE = 2
 };
 
-//*****************************************************************
-// File:   photonMapping.cpp
-// Author: Ming Tao, Ye   NIP: 839757, Puig Rubio, Manel Jorda  NIP: 839304
-// Date:   diciembre 2024
-// Coms:   Práctica 5 de Informática Gráfica
-//*****************************************************************
-
-#include "photonMapping.h"
-#include "base.h"
-#include <random>
 
 // Método que devuelve las coordenadas cartesianas correspondientes de (azimut, inclinacion)
 void getCoordenadasCartesianas(const float azimut, const float inclinacion,
@@ -90,30 +83,30 @@ float calcCosenoAnguloIncidencia(const Direccion& d, const Direccion& n);
 // Función que calcula la reflectancia difusa de Lambert.
 RGB calcBrdfDifusa(const RGB& kd);
 
-// Método que dado un punto <origen>, una direccion de incidencia <wo_d>, un flujo
-// unos coeficientes del punto origen y una normal, guarda el foton correspondiente en
-// <vecFotones> si la superficie es difusa. Si siguen habiendo fotones en el randomWalk y
-// en la luz, vuelve a llamarse recursivamente con los parámetros de la siguiente intersección,
+// Método que dado un punto <origen>, una direccion de incidencia <wo_d>, un flujo,
+// unos coeficientes del punto origen y una normal, guarda el fotón correspondiente en
+// <vecFotones> si la superficie es difusa. Si seguimos teniendo fotones que poner,
+// vuelve a llamarse recursivamente con los parámetros de la siguiente intersección,
 // según el rayo devuelto tras la ruleta rusa.
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            int &fotonesRestantesLuz, int &fotonesRestantesRW, const RGB& flujoIncidente,
+                            int &fotonesRestantes, const RGB& flujoIncidente,
                             const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal);
 
-// Método que lanza el rayo <wi> y, si interseca con algo, comienza un randomWalk
-void comenzarRandomWalk(vector<Photon>&vecFotones, const Escena& escena, const Rayo& wi,
-                        int &fotonesRestantesLuz, int &fotonesRestantesRW, const RGB& flujo);
+// Método que comienza un randomWalk con el rayo <wi> y guarda los fotones que obtiene en <vecFotones>.
+void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const Rayo& wi,
+                        int &fotonesRestantes, int &randomWalksRestantes, const RGB& flujo);
 
-// Método que, dada una luz, lanza <numFotonesLuz> y los guarda en <vecFotones>
-void anadirFotonesDeLuz(vector<Photon>& vecFotones, const int numFotonesLuz, 
-                        const LuzPuntual& luz, const Escena& escena, const int maxFotonesPorRandomWalk);
+// Método que, dada una luz, lanza <numFotonesLuz> en total y los guarda en <vecFotones>
+void generarFotonesDadaLuz(vector<Photon>& vecFotones, const int numFotonesLuz, const RGB& flujoFoton,
+                           const LuzPuntual& luz, const Escena& escena, const int maxRandomWalks);
 
 // Función que devuelve la suma de los componentes maximos de las potencias de las <luces>
 float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 
 // Método que genera <totalFotones> fotones en la escena y los guarda en <vecFotones>
 void generarFotones(vector<Photon>& vecFotones, const int totalFotones, 
-                        const int maxFotonesPorRandomWalk, const Escena& escena);
+                    const int maxRandomWalks, const Escena& escena);
 
 // Método que imprime por pantalla un vector de fotones
 void printVectorFotones(const vector<Photon>& vecFotones);
@@ -121,5 +114,5 @@ void printVectorFotones(const vector<Photon>& vecFotones);
 // Método que genera una imagen utilizando el photonMapping                 
 void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
-                      const int totalFotones, const int maxFotonesPorRandomWalk,
+                      const int totalFotones, const int maxRandomWalks,
                       const bool printPixelesProcesados);

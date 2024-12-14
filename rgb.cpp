@@ -72,6 +72,18 @@ RGB& RGB::operator+=(const RGB& d) {
     return *this;
 }
 
+RGB operator*(const float escalar, const RGB& color) {
+    return RGB(escalar * color.rgb[0], escalar * color.rgb[1], escalar * color.rgb[2]);
+}
+
+float RGB::modulo() const {
+    return sqrt(rgb[0] * rgb[0] + rgb[1] * rgb[1] + rgb[2] * rgb[2]);
+}
+
+float modulo(const RGB& r) {
+    return r.modulo();
+}
+
 float RGB::max() const {
     return std::max({rgb[0], rgb[1], rgb[2]});
 }
