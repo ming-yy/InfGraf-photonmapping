@@ -234,7 +234,7 @@ void generarFotonesDadaLuz(vector<Photon>& vecFotones, const int numFotonesLuz, 
     int randomWalksRestantes = maxRandomWalks;
     int numFotonesInicio = static_cast<int>(vecFotones.size());
 
-    while(fotonesRestantesLuz > 0 || randomWalksRestantes > 0){
+    while(fotonesRestantesLuz > 0 && randomWalksRestantes > 0){
         cout << "Nuevo random path, fotonesLuz restantes = " << fotonesRestantesLuz;
         cout << ", randomWalks restantes = " << randomWalksRestantes  << endl;
 
@@ -263,7 +263,7 @@ void generarFotones(vector<Photon>& vecFotones, const int totalFotones,
     float potenciaTotal = calcularPotenciaTotal(escena.luces);
     cout << "Potencia total: " << potenciaTotal << endl;
     for(auto luz : escena.luces){
-        int numFotonesProporcionales = totalFotones * (max(luz.p) / potenciaTotal);
+        int numFotonesProporcionales = totalFotones * (modulo(luz.p) / potenciaTotal);
         RGB flujoFoton = 4 * M_PI * luz.p / numFotonesProporcionales;
         cout << endl << "Generando " << numFotonesProporcionales << " fotones para luz..." << endl;
         cout << "Flujo de cada foton: " << flujoFoton << endl;
