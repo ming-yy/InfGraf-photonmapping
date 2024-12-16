@@ -156,9 +156,8 @@ RGB calcBrdfDifusa(const RGB& kd){
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
                             const RGB& flujoActual, const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal){
-
     if(vecFotones.size() >= vecFotones.max_size()){ // TERMINAL: no se pueden almacenar mas fotones
-        cout << " -- Acaba recurisividad: LIMITE DE VECTOR VECFOTONES ALCANZADO." << endl;
+        cout << " -- Acaba recurisividad: Limite de vecFotones alcanzado." << endl;
         return;
     }
 
@@ -213,13 +212,13 @@ void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const 
         //    return;
         //}
 
-        //cout << endl << "Comienza recursividad..." << endl;
-        //cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
-        //cout << " y normal " <<  normal << endl;
+        cout << endl << "Comienza recursividad..." << endl;
+        cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
+        cout << " y normal " <<  normal << endl;
         recursividadRandomWalk(vecFotones, escena, flujo, ptoIntersec,
                                wi.d, coefsPtoInterseccion, normal);
     } else {
-        //cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
+        cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
     }
 }
 
@@ -229,18 +228,16 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanza
                          const RGB& flujoFoton, const LuzPuntual& luz, const Escena& escena){
 
     int numRandomWalksRestantes = numFotonesALanzar;
-    int numFotonesInicio = static_cast<int>(vecFotones.size());
-
     int numFotonesLanzados = 0;
     
     while(numRandomWalksRestantes > 0 && vecFotones.size() < vecFotones.max_size()){
+        cout << "Nuevo random path, numRandomWalksRestantes = " << numRandomWalksRestantes;
+        cout << ", numFotonesLanzados = " << numFotonesLanzados  << endl;
         numRandomWalksRestantes--;
         numFotonesLanzados++;
-        //cout << "Nuevo random path, fotonesLuz restantes = " << fotonesRestantesLuz;
-        //cout << ", randomWalks restantes = " << randomWalksRestantes  << endl;
 
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
-        //cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
+        cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
 
         comenzarRandomWalk(vecFotones, escena, wi, flujoFoton);
     }
@@ -260,9 +257,9 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
 void generarFotones(vector<Photon>& vecFotones, const int totalFotonesALanzar,
                     const Escena& escena){
     
-    //cout << "Generando " << totalFotones << " fotones en total..." << endl;
+    cout << "Generando " << totalFotonesALanzar << " fotones en total..." << endl;
     float potenciaTotal = calcularPotenciaTotal(escena.luces);
-    //cout << "Potencia total: " << potenciaTotal << endl;
+    cout << "Potencia total: " << potenciaTotal << endl;
 
 
     for(auto& luz : escena.luces){
@@ -271,21 +268,20 @@ void generarFotones(vector<Photon>& vecFotones, const int totalFotonesALanzar,
         int numFotonesYaAlmacenados = vecFotones.size();
         RGB flujoFoton = 4 * M_PI * luz.p; // Se dividirá por S (numFotonesLanzados) posteriormente
 
-        //cout << endl << "Generando " << numFotonesProporcionales << " fotones para luz..." << endl;
-        //cout << "Flujo de cada foton: " << flujoFoton << endl;
+        cout << endl << "Generando " << numFotonesALanzar << " fotones para luz..." << endl;
+        cout << "Flujo inicial de cada foton: " << flujoFoton << endl;
         
         int numFotonesLanzados = lanzarFotonesDeUnaLuz(vecFotones, numFotonesALanzar,  
                                                         flujoFoton, luz, escena);
 
-        // Ajustamos la S después de lanzar los randomWalks (por si acaso hubiese tenido
-        // que detenerse por llegar al máximo del vector antes de lanzar todos los
-        // <numFotonesProporcionales> que le tocaban)
+        // Ajustamos la S después de lanzar los randomWalks (ahora que sabemos cuántos fotones
+        // se han lanzado realmente, teniendo en cuenta el límite del tamaño del vector)
         int offset = numFotonesYaAlmacenados;
         for(int i = 0; i < numFotonesLanzados; i++) {
             // Medida de seguridad, nunca debería saltar porque lanzarFotonesDeUnaLuz() ya lo detecta.
             if(i + offset >= vecFotones.max_size()) {
                 cout << "Se ha alcanzado el máximo de fotones almacenables: " << 
-                                                vecFotones.max_size() << endl;
+                                                        vecFotones.max_size() << endl;
                 return;
             }
 

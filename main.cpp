@@ -44,6 +44,15 @@ void liberarMemoriaDePrimitivas(vector<Primitiva*>& objetos) {
     objetos.clear(); // Limpia el vector para evitar punteros colgantes
 }
 
+// INSTRUCCIONES SOBRE LOS VECTORES
+// (x, y, z)
+// +x = derecha
+// -x = izquierda
+// +y = arriba
+// -y = abajo
+// +z = lejos
+// -z = cerca
+
 void cajaDeCornell(){
     vector<Primitiva*> objetos;
     objetos.push_back(new Plano({1.0f, 0.0f, 0.0f}, 1.0f, RGB({1.0f, 0.0f, 0.0f}), "muy_difuso")); // plano izquierdo, rojo
@@ -80,7 +89,7 @@ void cajaDeCornell(){
                         {-1.0f, 0.0f, 0.0f});
 
     const unsigned rpp = 32;
-    const int numFotones = 20;
+    const int numFotones = 3;
     const bool printPixelesProcesados = true;
 
     
