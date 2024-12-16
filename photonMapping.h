@@ -83,30 +83,33 @@ float calcCosenoAnguloIncidencia(const Direccion& d, const Direccion& n);
 // Función que calcula la reflectancia difusa de Lambert.
 RGB calcBrdfDifusa(const RGB& kd);
 
-// Método que dado un punto <origen>, una direccion de incidencia <wo_d>, un flujo,
-// unos coeficientes del punto origen y una normal, guarda el fotón correspondiente en
-// <vecFotones> si la superficie es difusa. Si seguimos teniendo fotones que poner,
-// vuelve a llamarse recursivamente con los parámetros de la siguiente intersección,
-// según el rayo devuelto tras la ruleta rusa.
+// Método que, si caben más fotones en <vecFotones>, dado un punto <origen>, 
+// una direccion de incidencia <wo_d>, un flujo, unos coeficientes del punto
+// origen y una normal, guarda el fotón correspondiente en <vecFotones> si la
+// superficie es difusa. Luego vuelve a llamarse recursivamente con los parámetros
+// de la siguiente intersección, según el rayo devuelto tras la ruleta rusa.
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            int &fotonesRestantes, const RGB& flujoIncidente,
-                            const Punto& origen, const Direccion &wo_d,
+                            const RGB& flujoActual, const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal);
 
-// Método que comienza un randomWalk con el rayo <wi> y guarda los fotones que obtiene en <vecFotones>.
+// Método que, dada una luz, lanza un foton desde esa luz guarda los fotones que rebotan 
+// en las superficies difusas en <vecFotones> (hasta que el randomWalk termine por absorción, 
+// por no-intersección o por llegar al límite de vecFotones)
 void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const Rayo& wi,
-                        int &fotonesRestantes, int &randomWalksRestantes, const RGB& flujo);
+                        const RGB& flujo);
 
-// Método que, dada una luz, lanza <numFotonesLuz> en total y los guarda en <vecFotones>
-void generarFotonesDadaLuz(vector<Photon>& vecFotones, const int numFotonesLuz, const RGB& flujoFoton,
-                           const LuzPuntual& luz, const Escena& escena, const int maxRandomWalks);
+// Optamos por almacenar todos los rebotes difusos (incluido el primero)
+// y saltarnos el NextEventEstimation posteriormente
+int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanzar,
+                         const RGB& flujoFoton, const LuzPuntual& luz, const Escena& escena);
 
 // Función que devuelve la suma de los componentes maximos de las potencias de las <luces>
 float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 
-// Método que genera <totalFotones> fotones en la escena y los guarda en <vecFotones>
-void generarFotones(vector<Photon>& vecFotones, const int totalFotones, 
-                    const int maxRandomWalks, const Escena& escena);
+// Método que lanza max(<totalFotones>, vecFotones.max_size()) fotones en la escena 
+// y los guarda en <vecFotones>
+void generarFotones(vector<Photon>& vecFotones, const int totalFotonesALanzar,
+                    const Escena& escena);
 
 // Método que imprime por pantalla un vector de fotones
 void printVectorFotones(const vector<Photon>& vecFotones);
@@ -114,5 +117,4 @@ void printVectorFotones(const vector<Photon>& vecFotones);
 // Método que genera una imagen utilizando el photonMapping                 
 void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
-                      const int totalFotones, const int maxRandomWalks,
-                      const bool printPixelesProcesados);
+                      const int totalFotones, const bool printPixelesProcesados);
