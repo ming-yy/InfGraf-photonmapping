@@ -108,8 +108,15 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 
 // Método que lanza max(<totalFotones>, vecFotones.max_size()) fotones en la escena 
 // y los guarda en <vecFotones>
-void generarFotones(vector<Photon>& vecFotones, const int totalFotonesALanzar,
-                    const Escena& escena);
+void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar,
+                            const Escena& escena);
+
+// Método que lee los fotones dispersados por <mapaFotones> vistos desde <camara> 
+// y "colorea" los píxeles que forman la imagen usando la estimación de densidad de Kernel
+void paso2LeerPhotonMap(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
+                    const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
+                    const unsigned rpp, vector<vector<RGB>>& coloresPixeles, const PhotonMap& mapaFotones, 
+                    const bool printPixelesProcesados, const int totalPixeles);
 
 // Método que imprime por pantalla un vector de fotones
 void printVectorFotones(const vector<Photon>& vecFotones);

@@ -157,28 +157,28 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
                             const RGB& flujoActual, const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal){
     if(vecFotones.size() >= vecFotones.max_size()){ // TERMINAL: no se pueden almacenar mas fotones
-        cout << " -- Acaba recurisividad: Limite de vecFotones alcanzado." << endl;
+        cout << endl << "-- LIMITE DE FOTONES ALCANZADO --" << endl << endl;
         return;
     }
 
     float probRuleta;
     TipoRayo tipoRayo = dispararRuletaRusa(coefsOrigen, probRuleta);
     if (tipoRayo == ABSORBENTE) {       // TERMINAL: rayo absorbente
-        cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
+        //cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
         return;
     } else if(tipoRayo == DIFUSO){
         // Solo luces puntuales
         RGB radianciaFoton = flujoActual * calcBrdfDifusa(coefsOrigen.kd) *
                              calcCosenoAnguloIncidencia(-wo_d, normal);
         Photon foton = Photon(origen.coord, wo_d, radianciaFoton);
-        cout << "Rayo difuso, metemos foton " << foton << endl;
+        //cout << "Rayo difuso, metemos foton " << foton << endl;
         vecFotones.push_back(foton);
     } else if(tipoRayo == ESPECULAR){
-        cout << "Rayo especular, seguimos" << endl;
+        //cout << "Rayo especular, seguimos" << endl;
     } else if(tipoRayo == REFRACTANTE){
-        cout << "Rayo refractante, seguimos" << endl;
+        //cout << "Rayo refractante, seguimos" << endl;
     } else {
-        cout << "Rayo ??? que" << endl;
+        //cout << "Rayo ??? que" << endl;
     }
 
     float probRayo;     // Ojo! La probabilidad es para la siguiente llamada recursiva pq es wi, no wo
@@ -190,7 +190,7 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
     bool hayIntersec = escena.interseccion(wi, coefsPtoIntersec, ptoIntersec, nuevaNormal);
 
     if (!hayIntersec) {     // TERMINAL: el siguiente rayo (wi) no interseca con nada
-        cout << " -- Acaba recurisividad: Rayo no interseca con nada" << endl;
+        //cout << " -- Acaba recurisividad: Rayo no interseca con nada" << endl;
         return;
     }
     
@@ -212,13 +212,13 @@ void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const 
         //    return;
         //}
 
-        cout << endl << "Comienza recursividad..." << endl;
-        cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
-        cout << " y normal " <<  normal << endl;
+        //cout << endl << "Comienza recursividad..." << endl;
+        //cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
+        //cout << " y normal " <<  normal << endl;
         recursividadRandomWalk(vecFotones, escena, flujo, ptoIntersec,
                                wi.d, coefsPtoInterseccion, normal);
     } else {
-        cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
+        //cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
     }
 }
 
@@ -231,13 +231,13 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanza
     int numFotonesLanzados = 0;
     
     while(numRandomWalksRestantes > 0 && vecFotones.size() < vecFotones.max_size()){
-        cout << "Nuevo random path, numRandomWalksRestantes = " << numRandomWalksRestantes;
-        cout << ", numFotonesLanzados = " << numFotonesLanzados  << endl;
+        //cout << "Nuevo random path, numRandomWalksRestantes = " << numRandomWalksRestantes;
+        //cout << ", numFotonesLanzados = " << numFotonesLanzados  << endl;
         numRandomWalksRestantes--;
         numFotonesLanzados++;
 
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
-        cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
+        //cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
 
         comenzarRandomWalk(vecFotones, escena, wi, flujoFoton);
     }
@@ -254,12 +254,13 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
     return total;
 }
 
-void generarFotones(vector<Photon>& vecFotones, const int totalFotonesALanzar,
-                    const Escena& escena){
-    
-    cout << "Generando " << totalFotonesALanzar << " fotones en total..." << endl;
+void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar,
+                            const Escena& escena){
+
+    vector<Photon> vecFotones; 
+    //cout << "Generando " << totalFotonesALanzar << " fotones en total..." << endl;
     float potenciaTotal = calcularPotenciaTotal(escena.luces);
-    cout << "Potencia total: " << potenciaTotal << endl;
+    //cout << "Potencia total: " << potenciaTotal << endl;
 
 
     for(auto& luz : escena.luces){
@@ -268,8 +269,8 @@ void generarFotones(vector<Photon>& vecFotones, const int totalFotonesALanzar,
         int numFotonesYaAlmacenados = vecFotones.size();
         RGB flujoFoton = 4 * M_PI * luz.p; // Se dividirá por S (numFotonesLanzados) posteriormente
 
-        cout << endl << "Generando " << numFotonesALanzar << " fotones para luz..." << endl;
-        cout << "Flujo inicial de cada foton: " << flujoFoton << endl;
+        //cout << endl << "Generando " << numFotonesALanzar << " fotones para luz..." << endl;
+        //cout << "Flujo inicial de cada foton: " << flujoFoton << endl;
         
         int numFotonesLanzados = lanzarFotonesDeUnaLuz(vecFotones, numFotonesALanzar,  
                                                         flujoFoton, luz, escena);
@@ -288,6 +289,9 @@ void generarFotones(vector<Photon>& vecFotones, const int totalFotonesALanzar,
             vecFotones[i + offset].flujo = vecFotones[i + offset].flujo/numFotonesLanzados;
         }
     }
+
+    //printVectorFotones(vecFotones);
+    mapaFotones = std::move(generarPhotonMap(vecFotones));
 }
 
 void printVectorFotones(const vector<Photon>& vecFotones){
@@ -296,8 +300,18 @@ void printVectorFotones(const vector<Photon>& vecFotones){
     }
 }
 
+void paso2LeerPhotonMap(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
+                    const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
+                    const unsigned rpp, vector<vector<RGB>>& coloresPixeles, const PhotonMap& mapaFotones, 
+                    const bool printPixelesProcesados, const int totalPixeles){
+
+
+        // TO DO
+
+}
+
                       
-void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
+void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
                       const int totalFotones, const bool printPixelesProcesados) {
 
@@ -305,35 +319,31 @@ void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlt
     float altoPorPixel = camara.calcularAltoPixel(numPxlsAlto);
     unsigned totalPixeles = numPxlsAlto * numPxlsAncho;
     
-    if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
+    //if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
 
-    vector<Photon> vecFotones;
-
-    generarFotones(vecFotones, totalFotones, escena);
-    printVectorFotones(vecFotones);
-
-    PhotonMap mapaFotones = std::move(generarPhotonMap(vecFotones));
-
-
-    // Inicializado todo a color negro
-    vector<vector<RGB>> coloresEscena(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
-
+   
+    PhotonMap mapaFotones;
+    paso1GenerarPhotonMap(mapaFotones, totalFotones, escena);
     
+    // Inicializado todo a color negro
+    vector<vector<RGB>> coloresPixeles(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 
-    //  TODO: FALTA GENERAR MAPA DE COLORES (PASO 2 DE PHOTONMAPPING)
+    paso2LeerPhotonMap(camara,  escena, numPxlsAncho, numPxlsAlto,
+                        anchoPorPixel, altoPorPixel, rpp, coloresPixeles, 
+                        mapaFotones, printPixelesProcesados, totalPixeles);
 
 
     /*
     if(rpp == 1){
         renderizarEscena1RPP(camara, numPxlsAncho, numPxlsAlto, escena, anchoPorPixel,
-                             altoPorPixel, fotonesPorRandomWalk, numRayosMontecarlo, coloresEscena,
+                             altoPorPixel, numRayosMontecarlo, coloresPixeles,
                              totalPixeles, printPixelesProcesados);
     } else {
         renderizarEscenaConAntialiasing(camara, numPxlsAncho, numPxlsAlto, escena, anchoPorPixel,
-                                        altoPorPixel, fotonesPorRandomWalk, numRayosMontecarlo, coloresEscena,
+                                        altoPorPixel, rpp, numRayosMontecarlo, coloresPixeles,
                                         printPixelesProcesados, totalPixeles, rpp);
     }
     */
     
-    //pintarEscenaEnPPM(nombreEscena, coloresEscena);
+    //pintarEscenaEnPPM(nombreEscena, coloresPixeles);
 }
