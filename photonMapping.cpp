@@ -300,14 +300,46 @@ void printVectorFotones(const vector<Photon>& vecFotones){
     }
 }
 
-void paso2LeerPhotonMap(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
+RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, 
+                        const Punto& ptoIntersec, const Direccion& dirIncidente,
+                        const Direccion& normal, const BSDFs& coefsPtoInterseccion){
+    
+}
+
+RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, const PhotonMap& mapaFotones){
+    
+    Punto ptoIntersec;
+    Direccion normal;
+    RGB radiancia(0.0f, 0.0f, 0.0f);
+    BSDFs coefsPtoInterseccion;
+   
+    if (escena.interseccion(rayoIncidente, coefsPtoInterseccion, ptoIntersec, normal)) {
+
+        // TODO: FALTAN REFRACCION Y ESPECULAR: OBTENER UN RAYO CON RULETA RUSA, 
+        // Y SI NO ES DIFUSO, SEGUIR EL CAMINO HASTA ENCONTRAR UNA SUPERFICIE DIFUSA
+        
+        radiancia = estimarEcuacionRender(escena, mapaFotones, ptoIntersec,
+                                            rayoIncidente.d, normal, coefsPtoInterseccion);
+    }
+
+    return radiancia;
+}
+
+void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
                     const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
-                    const unsigned rpp, vector<vector<RGB>>& coloresPixeles, const PhotonMap& mapaFotones, 
+                    vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
                     const bool printPixelesProcesados, const int totalPixeles){
 
-
-        // TO DO
-
+    for (unsigned ancho = 0; ancho < numPxlsAncho; ++ancho) {
+        for (unsigned alto = 0; alto < numPxlsAlto; ++alto) {
+            //if (printPixelesProcesados) printPixelActual(totalPixeles, numPxlsAncho, ancho, alto);
+            
+            Rayo rayo(Direccion(0.0f, 0.0f, 0.0f), Punto());
+            rayo = camara.obtenerRayoCentroPixel(ancho, anchoPorPixel, alto, altoPorPixel);
+            globalizarYNormalizarRayo(rayo, camara.o, camara.f, camara.u, camara.l);
+            colorPixeles[alto][ancho] = obtenerRadianciaPixel(rayo, escena, mapaFotones);
+        }
+    }
 }
 
                       
@@ -326,10 +358,10 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
     paso1GenerarPhotonMap(mapaFotones, totalFotones, escena);
     
     // Inicializado todo a color negro
-    vector<vector<RGB>> coloresPixeles(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
+    vector<vector<RGB>> colorPixeles(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 
-    paso2LeerPhotonMap(camara,  escena, numPxlsAncho, numPxlsAlto,
-                        anchoPorPixel, altoPorPixel, rpp, coloresPixeles, 
+    paso2LeerPhotonMap1RPP(camara,  escena, numPxlsAncho, numPxlsAlto,
+                        anchoPorPixel, altoPorPixel, colorPixeles, 
                         mapaFotones, printPixelesProcesados, totalPixeles);
 
 

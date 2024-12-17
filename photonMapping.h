@@ -111,15 +111,29 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar,
                             const Escena& escena);
 
-// Método que lee los fotones dispersados por <mapaFotones> vistos desde <camara> 
-// y "colorea" los píxeles que forman la imagen usando la estimación de densidad de Kernel
-void paso2LeerPhotonMap(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
-                    const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
-                    const unsigned rpp, vector<vector<RGB>>& coloresPixeles, const PhotonMap& mapaFotones, 
-                    const bool printPixelesProcesados, const int totalPixeles);
 
 // Método que imprime por pantalla un vector de fotones
 void printVectorFotones(const vector<Photon>& vecFotones);
+
+// Función que...
+RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, 
+                        const Punto& ptoIntersec, const Direccion& dirIncidente,
+                        const Direccion& normal, const BSDFs& coefsPtoInterseccion);
+
+// Función que, dado un rayo (que proviene de la cámara y atraviesa un pixel), una escena y
+// un mapa de fotones (producido por las luces de la escena), devuelve la radiancia del punto
+// de intersección entre el rayo y la escena, usando la estimación de densidad del kernel con los
+// fotones cercanos al punto intersecado para aproximar la ecuación de render. Dicha radiancia será
+// el color que deberá tomar el pixel intersecado por el rayo
+RGB obtenerRadianciaPixel(const Rayo& rayo, const Escena& escena, const PhotonMap& mapaFotones);
+
+// Método que lee los fotones dispersados por <mapaFotones> vistos desde <camara> 
+// y "colorea" los píxeles que forman la imagen usando la estimación de densidad de Kernel
+void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
+                    const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
+                    vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
+                    const bool printPixelesProcesados, const int totalPixeles);
+
 
 // Método que genera una imagen utilizando el photonMapping                 
 void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
