@@ -89,7 +89,7 @@ RGB calcBrdfDifusa(const RGB& kd);
 // superficie es difusa. Luego vuelve a llamarse recursivamente con los parámetros
 // de la siguiente intersección, según el rayo devuelto tras la ruleta rusa.
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            const RGB& flujoActual, const Punto& origen, const Direccion &wo_d,
+                            RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal);
 
 // Método que, dada una luz, lanza un foton desde esa luz guarda los fotones que rebotan 
@@ -101,7 +101,7 @@ void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
 int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanzar,
-                         const RGB& flujoFoton, const LuzPuntual& luz, const Escena& escena);
+                         const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena);
 
 // Función que devuelve la suma de los componentes maximos de las potencias de las <luces>
 float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
@@ -136,6 +136,6 @@ void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const un
 
 
 // Método que genera una imagen utilizando el photonMapping                 
-void renderizarEscena(Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
+void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
                       const int totalFotones, const bool printPixelesProcesados);

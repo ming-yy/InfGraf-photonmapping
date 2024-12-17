@@ -21,7 +21,7 @@ Planeta::Planeta(const Punto& _centro, const Direccion& _eje, const Punto& _cref
     estacion[1] = _azimut;
                      
     radio = modulo(_cref - _centro);
-    if (abs(modulo(_eje) - radio*2) > MARGEN_ERROR) {
+    if (abs(modulo(_eje) - radio*2) > MARGEN_ERROR_INTERSEC) {
         throw invalid_argument("Error: eje del planeta (" + to_string(modulo(_eje)) +
                                  ") no es el doble del radio (" + to_string(radio) + ").");
     }

@@ -34,7 +34,7 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) c
         float t2 = (-b - sqrt(discriminante)) / (2 * a);
         Punto p1 = rayo.o + rayo.d * t1;
         Punto p2 = rayo.o + rayo.d * t2;
-        if (t1 > MARGEN_ERROR && t2 > MARGEN_ERROR) {
+        if (t1 > MARGEN_ERROR_INTERSEC && t2 > MARGEN_ERROR_INTERSEC) {
             if (modulo(rayo.o - p1) < modulo(rayo.o - p2)) {    // Primero interseca con p1
                 ptos.push_back(p1);
                 ptos.push_back(p2);
@@ -43,10 +43,10 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) c
                 ptos.push_back(p1);
             }
             
-        } else if (t1 > MARGEN_ERROR) {
+        } else if (t1 > MARGEN_ERROR_INTERSEC) {
             ptos.push_back(p1);
             
-        } else if (t2 > MARGEN_ERROR) {
+        } else if (t2 > MARGEN_ERROR_INTERSEC) {
             ptos.push_back(p2);
         }
         
@@ -60,7 +60,7 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) c
     } else if (discriminante == 0) {  // Caso de una solución única
         float t = -b / (2 * a);
         Punto puntoInterseccion = rayo.o + rayo.d * t;
-        if (t > MARGEN_ERROR) {
+        if (t > MARGEN_ERROR_INTERSEC) {
             ptos.push_back(puntoInterseccion);
             coefs = this->coeficientes;
         }
@@ -77,7 +77,7 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) c
 
 bool Esfera::pertenece(const Punto& p0) const {
     float distancia = modulo(p0 - this->centro);
-    return abs(distancia - this->radio) <= MARGEN_ERROR;
+    return abs(distancia - this->radio) <= MARGEN_ERROR_INTERSEC;
 }
 
 Direccion Esfera::getNormal(const Punto& punto) const {

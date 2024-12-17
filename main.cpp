@@ -88,8 +88,8 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    const unsigned rpp = 32;
-    const int numFotones = 3;
+    const unsigned rpp = 1;
+    const int numFotones = 5000000;
     const bool printPixelesProcesados = true;
 
     

@@ -28,10 +28,10 @@ void fotonesCercanos(PhotonMap& photonMap, array<float, 3>& coordBusqueda, float
 
 // Método que devuelve por referencia en <fotonesCercanos> los fotos más cercanos
 // a la posición <coordBusqueda>, dado un numero maximo de fotones a encontrar <numFotones>
-void fotonesCercanosPorNumFotones(PhotonMap& photonMap, array<float, 3>& coordBusqueda,
+void fotonesCercanosPorNumFotones(const PhotonMap& photonMap, const array<float, 3>& coordBusqueda,
                         unsigned long numFotones, vector<const Photon*>& fotonesCercanos);
 
 // Método que devuelve por referencia en <fotonesCercanos> los fotos más cercanos
 // a la posición <coordBusqueda>, dado un radio de busqueda maximo <radio>
-void fotonesCercanosPorRadio(PhotonMap& photonMap, array<float, 3>& coordBusqueda,
+void fotonesCercanosPorRadio(const PhotonMap& photonMap, const array<float, 3>& coordBusqueda,
                                 float radio, vector<const Photon*>& fotonesCercanos);

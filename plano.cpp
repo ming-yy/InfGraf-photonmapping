@@ -31,7 +31,7 @@ Plano::Plano(const Direccion& _n, const float _d, const RGB& _reflectancia, cons
 
 void Plano::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) const {
     float denominador = dot(rayo.d, n);
-    if (fabs(denominador) < MARGEN_ERROR) {    // Para evitar problemas de imprecision
+    if (fabs(denominador) < MARGEN_ERROR_INTERSEC) {    // Para evitar problemas de imprecision
         //cout << "No hay intersección, el rayo es paralelo al plano." << endl;
         return;
     }
@@ -49,7 +49,7 @@ void Plano::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) co
 }
 
 bool Plano::pertenece(const Punto& p0) const {
-    return abs(dot(this->n, p0) + this->d) < MARGEN_ERROR;
+    return abs(dot(this->n, p0) + this->d) < MARGEN_ERROR_INTERSEC;
 }
 
 Direccion Plano::getNormal(const Punto& punto) const {

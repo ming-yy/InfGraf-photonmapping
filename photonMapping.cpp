@@ -8,6 +8,7 @@
 #include "photonMapping.h"
 #include "base.h"
 #include <random>
+#include "gestorPPM.h"
 
 void getCoordenadasCartesianas(const float azimut, const float inclinacion,
                                 float& x, float& y, float& z) {
@@ -154,10 +155,15 @@ RGB calcBrdfDifusa(const RGB& kd){
 }
 
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            const RGB& flujoActual, const Punto& origen, const Direccion &wo_d,
+                            RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal){
     if(vecFotones.size() >= vecFotones.max_size()){ // TERMINAL: no se pueden almacenar mas fotones
         cout << endl << "-- LIMITE DE FOTONES ALCANZADO --" << endl << endl;
+        return;
+    }
+
+    if(modulo(radianciaActual) <= MARGEN_ERROR_FOTON){
+        // Paramos la recursividad cuando se ha perdido casi toda la energía
         return;
     }
 
@@ -168,9 +174,9 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
         return;
     } else if(tipoRayo == DIFUSO){
         // Solo luces puntuales
-        RGB radianciaFoton = flujoActual * calcBrdfDifusa(coefsOrigen.kd) *
+        radianciaActual = radianciaActual * calcBrdfDifusa(coefsOrigen.kd) *
                              calcCosenoAnguloIncidencia(-wo_d, normal);
-        Photon foton = Photon(origen.coord, wo_d, radianciaFoton);
+        Photon foton = Photon(origen.coord, wo_d, radianciaActual);
         //cout << "Rayo difuso, metemos foton " << foton << endl;
         vecFotones.push_back(foton);
     } else if(tipoRayo == ESPECULAR){
@@ -194,12 +200,13 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
         return;
     }
     
-    recursividadRandomWalk(vecFotones, escena, flujoActual,
+    radianciaActual = radianciaActual/probRayo;
+    recursividadRandomWalk(vecFotones, escena, radianciaActual,
                            ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal);
 }
 
 void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const Rayo& wi,
-                        const RGB& flujo){
+                        RGB& flujoInicial){
     Punto ptoIntersec;
     BSDFs coefsPtoInterseccion;
     Direccion normal;
@@ -215,7 +222,7 @@ void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const 
         //cout << endl << "Comienza recursividad..." << endl;
         //cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
         //cout << " y normal " <<  normal << endl;
-        recursividadRandomWalk(vecFotones, escena, flujo, ptoIntersec,
+        recursividadRandomWalk(vecFotones, escena, flujoInicial, ptoIntersec,
                                wi.d, coefsPtoInterseccion, normal);
     } else {
         //cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
@@ -225,12 +232,13 @@ void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
 int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanzar,
-                         const RGB& flujoFoton, const LuzPuntual& luz, const Escena& escena){
+                         const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena){
 
     int numRandomWalksRestantes = numFotonesALanzar;
     int numFotonesLanzados = 0;
     
     while(numRandomWalksRestantes > 0 && vecFotones.size() < vecFotones.max_size()){
+        if(numRandomWalksRestantes % 10000 == 0){ cout << "Fotones restantes: " << numRandomWalksRestantes << endl;}
         //cout << "Nuevo random path, numRandomWalksRestantes = " << numRandomWalksRestantes;
         //cout << ", numFotonesLanzados = " << numFotonesLanzados  << endl;
         numRandomWalksRestantes--;
@@ -238,8 +246,8 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanza
 
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
         //cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
-
-        comenzarRandomWalk(vecFotones, escena, wi, flujoFoton);
+        RGB flujoInicial = flujoPorFoton;
+        comenzarRandomWalk(vecFotones, escena, wi, flujoInicial);
     }
 
     return numFotonesLanzados;
@@ -304,6 +312,21 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones,
                         const Punto& ptoIntersec, const Direccion& dirIncidente,
                         const Direccion& normal, const BSDFs& coefsPtoInterseccion){
     
+    vector<const Photon*> fotonesCercanos;
+    float radio = 0.01f;
+
+    fotonesCercanosPorRadio(mapaFotones, ptoIntersec.coord,
+                                radio, fotonesCercanos);
+
+    RGB radiancia(0.0f, 0.0f, 0.0f);
+
+    for (const Photon* photon : fotonesCercanos) {
+        if (photon) {
+            radiancia += photon->flujo/(M_PI * pow(radio, 2.0f));
+        }
+    }
+
+    return radiancia;
 }
 
 RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, const PhotonMap& mapaFotones){
@@ -377,5 +400,5 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
     }
     */
     
-    //pintarEscenaEnPPM(nombreEscena, coloresPixeles);
+    pintarEscenaEnPPM(nombreEscena, colorPixeles);
 }
