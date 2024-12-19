@@ -89,14 +89,14 @@ RGB calcBrdfDifusa(const RGB& kd);
 // superficie es difusa. Luego vuelve a llamarse recursivamente con los parámetros
 // de la siguiente intersección, según el rayo devuelto tras la ruleta rusa.
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
+                            const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal);
 
 // Método que, dada una luz, lanza un foton desde esa luz guarda los fotones que rebotan 
 // en las superficies difusas en <vecFotones> (hasta que el randomWalk termine por absorción, 
 // por no-intersección o por llegar al límite de vecFotones)
 void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const Rayo& wi,
-                        const RGB& flujo);
+                        const RGB& flujoInicial, RGB& flujoRestante);
 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente

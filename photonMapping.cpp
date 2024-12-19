@@ -155,7 +155,7 @@ RGB calcBrdfDifusa(const RGB& kd){
 }
 
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
+                            const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
                             const BSDFs &coefsOrigen, const Direccion& normal){
     if(vecFotones.size() >= vecFotones.max_size()){ // TERMINAL: no se pueden almacenar mas fotones
         cout << endl << "-- LIMITE DE FOTONES ALCANZADO --" << endl << endl;
@@ -167,6 +167,13 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
         return;
     }
 
+    /*
+    if(modulo(radianciaActual) > modulo(radianciaInicial)){
+        // Paramos la recursividad cuando el foton se ilumina mas que la luz (PRUEBA)
+        return;
+    }
+    */
+
     float probRuleta;
     TipoRayo tipoRayo = dispararRuletaRusa(coefsOrigen, probRuleta);
     if (tipoRayo == ABSORBENTE) {       // TERMINAL: rayo absorbente
@@ -174,8 +181,10 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
         return;
     } else if(tipoRayo == DIFUSO){
         // Solo luces puntuales
+        
         radianciaActual = radianciaActual * calcBrdfDifusa(coefsOrigen.kd) *
                              calcCosenoAnguloIncidencia(-wo_d, normal);
+        //radianciaActual = radianciaActual/probRuleta; // Esto se hace aqui ??
         Photon foton = Photon(origen.coord, wo_d, radianciaActual);
         //cout << "Rayo difuso, metemos foton " << foton << endl;
         vecFotones.push_back(foton);
@@ -189,6 +198,7 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
 
     float probRayo;     // Ojo! La probabilidad es para la siguiente llamada recursiva pq es wi, no wo
     Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo_d, normal, probRayo);
+    if(probRayo < 0.1) return;
 
     BSDFs coefsPtoIntersec;
     Punto ptoIntersec;
@@ -201,12 +211,12 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
     }
     
     radianciaActual = radianciaActual/probRayo;
-    recursividadRandomWalk(vecFotones, escena, radianciaActual,
+    recursividadRandomWalk(vecFotones, escena, radianciaInicial, radianciaActual,
                            ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal);
 }
 
 void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const Rayo& wi,
-                        RGB& flujoInicial){
+                        const RGB& flujoInicial, RGB& flujoRestante){
     Punto ptoIntersec;
     BSDFs coefsPtoInterseccion;
     Direccion normal;
@@ -222,7 +232,7 @@ void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const 
         //cout << endl << "Comienza recursividad..." << endl;
         //cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
         //cout << " y normal " <<  normal << endl;
-        recursividadRandomWalk(vecFotones, escena, flujoInicial, ptoIntersec,
+        recursividadRandomWalk(vecFotones, escena, flujoInicial, flujoRestante, ptoIntersec,
                                wi.d, coefsPtoInterseccion, normal);
     } else {
         //cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
@@ -246,8 +256,8 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanza
 
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
         //cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
-        RGB flujoInicial = flujoPorFoton;
-        comenzarRandomWalk(vecFotones, escena, wi, flujoInicial);
+        RGB flujoRestante = flujoPorFoton;
+        comenzarRandomWalk(vecFotones, escena, wi, flujoPorFoton, flujoRestante);
     }
 
     return numFotonesLanzados;
@@ -279,7 +289,7 @@ void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar
 
         //cout << endl << "Generando " << numFotonesALanzar << " fotones para luz..." << endl;
         //cout << "Flujo inicial de cada foton: " << flujoFoton << endl;
-        
+        //cout << flujoFoton << endl;
         int numFotonesLanzados = lanzarFotonesDeUnaLuz(vecFotones, numFotonesALanzar,  
                                                         flujoFoton, luz, escena);
 
@@ -293,7 +303,7 @@ void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar
                                                         vecFotones.max_size() << endl;
                 return;
             }
-
+            
             vecFotones[i + offset].flujo = vecFotones[i + offset].flujo/numFotonesLanzados;
         }
     }
@@ -308,12 +318,27 @@ void printVectorFotones(const vector<Photon>& vecFotones){
     }
 }
 
+RGB radianciaKernelConstante(const Photon* photon, const float radio){
+    return photon->flujo/(M_PI * pow(radio, 2.0f));
+}
+
+RGB radianciaKernelGaussiano(const Photon* photon, const float radio, const Punto& centro){
+    float raizDosPi = sqrt(2*M_PI);
+    float cteNormalizacion = 1/(radio*raizDosPi);
+    Punto puntoFoton = Punto(photon->coord);
+    float numeradorExp = pow((modulo(puntoFoton - centro)), 2);
+    float denominadorExp = 2*pow(radio, 2);
+    float exponente = -numeradorExp/denominadorExp;
+    float kernel = cteNormalizacion*pow(M_E, exponente);
+    return photon->flujo*kernel;
+}
+
 RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, 
                         const Punto& ptoIntersec, const Direccion& dirIncidente,
                         const Direccion& normal, const BSDFs& coefsPtoInterseccion){
     
     vector<const Photon*> fotonesCercanos;
-    float radio = 0.01f;
+    float radio = 0.05f;
 
     fotonesCercanosPorRadio(mapaFotones, ptoIntersec.coord,
                                 radio, fotonesCercanos);
@@ -322,7 +347,8 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones,
 
     for (const Photon* photon : fotonesCercanos) {
         if (photon) {
-            radiancia += photon->flujo/(M_PI * pow(radio, 2.0f));
+            radiancia += radianciaKernelConstante(photon, radio);
+            //radiancia += radianciaKernelGaussiano(photon, radio, ptoIntersec);
         }
     }
 
@@ -348,6 +374,13 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, const
     return radiancia;
 }
 
+void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned ancho, unsigned alto){
+    unsigned pixelActual = numPxlsAncho * ancho + alto + 1;
+    if (pixelActual % 100 == 0 || pixelActual == totalPixeles) {
+        cout << pixelActual << " pixeles de " << totalPixeles << endl;
+    }
+}
+
 void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
                     const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
                     vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
@@ -355,7 +388,7 @@ void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const un
 
     for (unsigned ancho = 0; ancho < numPxlsAncho; ++ancho) {
         for (unsigned alto = 0; alto < numPxlsAlto; ++alto) {
-            //if (printPixelesProcesados) printPixelActual(totalPixeles, numPxlsAncho, ancho, alto);
+            if (printPixelesProcesados) printPixelActual(totalPixeles, numPxlsAncho, ancho, alto);
             
             Rayo rayo(Direccion(0.0f, 0.0f, 0.0f), Punto());
             rayo = camara.obtenerRayoCentroPixel(ancho, anchoPorPixel, alto, altoPorPixel);
@@ -374,7 +407,7 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
     float altoPorPixel = camara.calcularAltoPixel(numPxlsAlto);
     unsigned totalPixeles = numPxlsAlto * numPxlsAncho;
     
-    //if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
+    if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
 
    
     PhotonMap mapaFotones;
