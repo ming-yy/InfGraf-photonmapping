@@ -155,15 +155,14 @@ RGB calcBrdfDifusa(const RGB& kd){
 }
 
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
-                            const BSDFs &coefsOrigen, const Direccion& normal){
-    if(vecFotones.size() >= vecFotones.max_size()){ // TERMINAL: no se pueden almacenar mas fotones
+                            const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen,
+                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal) {
+    if (vecFotones.size() >= vecFotones.max_size()) { // TERMINAL: no se pueden almacenar mas fotones
         cout << endl << "-- LIMITE DE FOTONES ALCANZADO --" << endl << endl;
         return;
     }
 
-    if(modulo(radianciaActual) <= MARGEN_ERROR_FOTON){
-        // Paramos la recursividad cuando se ha perdido casi toda la energía
+    if (modulo(radianciaActual) <= MARGEN_ERROR_FOTON) {    // TERMINAL: fotón ha perdido casi toda la energía
         return;
     }
 
@@ -174,43 +173,35 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
     }
     */
 
-    float probRuleta;
-    TipoRayo tipoRayo = dispararRuletaRusa(coefsOrigen, probRuleta);
+    float probTipoRayo;
+    TipoRayo tipoRayo = dispararRuletaRusa(coefsOrigen, probTipoRayo);
     if (tipoRayo == ABSORBENTE) {       // TERMINAL: rayo absorbente
         //cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
         return;
-    } else if(tipoRayo == DIFUSO){
-        // Solo luces puntuales
-        
+    } else if (tipoRayo == DIFUSO) {
         radianciaActual = radianciaActual * calcBrdfDifusa(coefsOrigen.kd) *
-                             calcCosenoAnguloIncidencia(-wo_d, normal);
-        //radianciaActual = radianciaActual/probRuleta; // Esto se hace aqui ??
+                          calcCosenoAnguloIncidencia(-wo_d, normal);
+        radianciaActual = radianciaActual / probTipoRayo;
         Photon foton = Photon(origen.coord, wo_d, radianciaActual);
         //cout << "Rayo difuso, metemos foton " << foton << endl;
         vecFotones.push_back(foton);
-    } else if(tipoRayo == ESPECULAR){
-        //cout << "Rayo especular, seguimos" << endl;
-    } else if(tipoRayo == REFRACTANTE){
-        //cout << "Rayo refractante, seguimos" << endl;
-    } else {
-        //cout << "Rayo ??? que" << endl;
     }
 
-    float probRayo;     // Ojo! La probabilidad es para la siguiente llamada recursiva pq es wi, no wo
-    Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo_d, normal, probRayo);
-    if(probRayo < 0.1) return;
+    float probDirRayo;
+    Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo_d, normal, probDirRayo);
+    
+    if (probDirRayo < 0.1) return;     // TERMINAL: rayo poco relevante
 
     BSDFs coefsPtoIntersec;
     Punto ptoIntersec;
     Direccion nuevaNormal;
     bool hayIntersec = escena.interseccion(wi, coefsPtoIntersec, ptoIntersec, nuevaNormal);
-
     if (!hayIntersec) {     // TERMINAL: el siguiente rayo (wi) no interseca con nada
         //cout << " -- Acaba recurisividad: Rayo no interseca con nada" << endl;
         return;
     }
     
-    radianciaActual = radianciaActual/probRayo;
+    radianciaActual = radianciaActual / probDirRayo;
     recursividadRandomWalk(vecFotones, escena, radianciaInicial, radianciaActual,
                            ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal);
 }
@@ -242,8 +233,7 @@ void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
 int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanzar,
-                         const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena){
-
+                          const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena){
     int numRandomWalksRestantes = numFotonesALanzar;
     int numFotonesLanzados = 0;
     
@@ -273,18 +263,16 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
 }
 
 void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar,
-                            const Escena& escena){
-
-    vector<Photon> vecFotones; 
+                           const Escena& escena){
+    vector<Photon> vecFotones;
     //cout << "Generando " << totalFotonesALanzar << " fotones en total..." << endl;
     float potenciaTotal = calcularPotenciaTotal(escena.luces);
     //cout << "Potencia total: " << potenciaTotal << endl;
 
 
-    for(auto& luz : escena.luces){
-        // Cada luz lanza un número de fotones proporcional a su potencia
+    for(auto& luz : escena.luces) {  // Cada luz lanza num fotones proporcional a su potencia
         int numFotonesALanzar = totalFotonesALanzar * (modulo(luz.p) / potenciaTotal);
-        int numFotonesYaAlmacenados = vecFotones.size();
+        int numFotonesYaAlmacenados = static_cast<int>(vecFotones.size());
         RGB flujoFoton = 4 * M_PI * luz.p; // Se dividirá por S (numFotonesLanzados) posteriormente
 
         //cout << endl << "Generando " << numFotonesALanzar << " fotones para luz..." << endl;
@@ -334,15 +322,12 @@ RGB radianciaKernelGaussiano(const Photon* photon, const float radio, const Punt
 }
 
 RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, 
-                        const Punto& ptoIntersec, const Direccion& dirIncidente,
-                        const Direccion& normal, const BSDFs& coefsPtoInterseccion){
-    
+                          const Punto& ptoIntersec, const Direccion& dirIncidente,
+                          const Direccion& normal, const BSDFs& coefsPtoInterseccion){
     vector<const Photon*> fotonesCercanos;
     float radio = 0.05f;
 
-    fotonesCercanosPorRadio(mapaFotones, ptoIntersec.coord,
-                                radio, fotonesCercanos);
-
+    fotonesCercanosPorRadio(mapaFotones, ptoIntersec.coord, radio, fotonesCercanos);
     RGB radiancia(0.0f, 0.0f, 0.0f);
 
     for (const Photon* photon : fotonesCercanos) {
@@ -355,20 +340,56 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones,
     return radiancia;
 }
 
-RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, const PhotonMap& mapaFotones){
-    
+RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, const PhotonMap& mapaFotones) {
     Punto ptoIntersec;
     Direccion normal;
     RGB radiancia(0.0f, 0.0f, 0.0f);
     BSDFs coefsPtoInterseccion;
-   
-    if (escena.interseccion(rayoIncidente, coefsPtoInterseccion, ptoIntersec, normal)) {
-
-        // TODO: FALTAN REFRACCION Y ESPECULAR: OBTENER UN RAYO CON RULETA RUSA, 
-        // Y SI NO ES DIFUSO, SEGUIR EL CAMINO HASTA ENCONTRAR UNA SUPERFICIE DIFUSA
-        
-        radiancia = estimarEcuacionRender(escena, mapaFotones, ptoIntersec,
-                                            rayoIncidente.d, normal, coefsPtoInterseccion);
+    Rayo wi = rayoIncidente;
+    bool choqueContraDifuso = false;
+    bool hayInterseccion = false;
+    bool choqueContraAbsorbente = false;
+    
+    while (!choqueContraAbsorbente && !choqueContraDifuso) {
+    //while (!choqueContraDifuso) {
+        hayInterseccion = escena.interseccion(wi, coefsPtoInterseccion, ptoIntersec, normal);
+        if (!hayInterseccion) { // No es muy elegante tbh
+            break;
+        } else {
+            float probTipoRayo;
+              // Opcion 1: puede salir absorbente
+            TipoRayo tipoRayo = dispararRuletaRusa(coefsPtoInterseccion, probTipoRayo);
+            if (tipoRayo == ABSORBENTE) {       // TERMINAL: rayo absorbente
+                //cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
+                choqueContraAbsorbente = true;
+            } else if (tipoRayo == DIFUSO) {
+                choqueContraDifuso = true;
+            } else if (tipoRayo == ESPECULAR || tipoRayo == REFRACTANTE) {
+                float probDirRayo;
+                wi = obtenerRayoRuletaRusa(tipoRayo, ptoIntersec, wi.d, normal, probDirRayo);
+            }
+            
+            
+            /*
+            // Opción 2: NO puede salir absorbente --> teóricamente está mal
+            TipoRayo tipoRayo = ABSORBENTE;
+            while (tipoRayo == ABSORBENTE) {
+                tipoRayo = dispararRuletaRusa(coefsPtoInterseccion, probTipoRayo);
+            }
+            
+            if (tipoRayo == DIFUSO) {
+                choqueContraDifuso = true;
+            } else if (tipoRayo == ESPECULAR || tipoRayo == REFRACTANTE) {
+                float probDirRayo;
+                wi = obtenerRayoRuletaRusa(tipoRayo, ptoIntersec, wi.d, normal, probDirRayo);
+            }
+            */
+        }
+    }
+    
+    if (choqueContraDifuso && hayInterseccion) {
+        radiancia = estimarEcuacionRender(escena, mapaFotones, ptoIntersec, wi.d,
+                                          normal, coefsPtoInterseccion);
     }
 
     return radiancia;
@@ -417,8 +438,8 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
     vector<vector<RGB>> colorPixeles(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 
     paso2LeerPhotonMap1RPP(camara,  escena, numPxlsAncho, numPxlsAlto,
-                        anchoPorPixel, altoPorPixel, colorPixeles, 
-                        mapaFotones, printPixelesProcesados, totalPixeles);
+                           anchoPorPixel, altoPorPixel, colorPixeles,
+                           mapaFotones, printPixelesProcesados, totalPixeles);
 
 
     /*
