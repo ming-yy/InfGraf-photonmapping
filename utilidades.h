@@ -19,6 +19,7 @@
 #include <cmath>        // ya contiene todos los métodos matemáticos con namespace std
 #include <stdexcept>
 #include <memory>        // Para std::shared_ptr
+#include <thread>
 
 // Constantes
 constexpr float MARGEN_ERROR_INTERSEC = 1e-6f;          // Para calcular intersecciones
@@ -53,6 +54,7 @@ using std::setprecision;
 using std::size_t;
 using std::stack;
 using std::string;
+using std::thread;
 using std::to_string;
 using std::vector;
 using std::setw;

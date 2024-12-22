@@ -145,3 +145,24 @@ void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, 
 void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
                       const int totalFotones, const bool printPixelesProcesados);
+
+
+//////// Parelelización
+
+void renderizarRangoFilasPhotonMap1RPP(const Camara& camara, unsigned inicioFila, unsigned finFila,
+                                       unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel,
+                                       float altoPorPixel, vector<vector<RGB>>& colorPixeles,
+                                       const PhotonMap& mapaFotones, size_t numFotones,
+                                       const bool printPixelesProcesados, const int totalPixeles);
+
+void renderizarRangoFilasPhotonMapAntialiasing(const Camara& camara, unsigned inicioFila, unsigned finFila,
+                                               unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel,
+                                               float altoPorPixel, vector<vector<RGB>>& colorPixeles,
+                                               const PhotonMap& mapaFotones, size_t numFotones,
+                                               const bool printPixelesProcesados, const int totalPixeles,
+                                               const unsigned rpp);
+
+void renderizarEscenaConThreads(const Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
+                                const Escena& escena, const string& nombreEscena, const unsigned rpp,
+                                const int totalFotones, const bool printPixelesProcesados,
+                                unsigned numThreads = thread::hardware_concurrency());

@@ -7,8 +7,9 @@
 
 #include "photonMapping.h"
 #include "base.h"
-#include <random>
 #include "gestorPPM.h"
+#include <random>
+#include <thread>
 
 void getCoordenadasCartesianas(const float azimut, const float inclinacion,
                                 float& x, float& y, float& z) {
@@ -465,7 +466,6 @@ void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, 
         }
     }
 }
-
                       
 void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const unsigned numPxlsAlto,
                       const Escena& escena, const string& nombreEscena, const unsigned rpp,
@@ -495,20 +495,91 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
                             anchoPorPixel, altoPorPixel, colorPixeles,
                             mapaFotones, numFotones, printPixelesProcesados, totalPixeles, rpp);
     }
-
-
-
-    /*
-    if(rpp == 1){
-        renderizarEscena1RPP(camara, numPxlsAncho, numPxlsAlto, escena, anchoPorPixel,
-                             altoPorPixel, numRayosMontecarlo, coloresPixeles,
-                             totalPixeles, printPixelesProcesados);
-    } else {
-        renderizarEscenaConAntialiasing(camara, numPxlsAncho, numPxlsAlto, escena, anchoPorPixel,
-                                        altoPorPixel, rpp, numRayosMontecarlo, coloresPixeles,
-                                        printPixelesProcesados, totalPixeles, rpp);
-    }
-    */
     
+    pintarEscenaEnPPM(nombreEscena, colorPixeles);
+}
+
+void renderizarRangoFilasPhotonMap1RPP(const Camara& camara, unsigned inicioFila, unsigned finFila,
+                                       unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel,
+                                       float altoPorPixel, vector<vector<RGB>>& colorPixeles,
+                                       const PhotonMap& mapaFotones, size_t numFotones,
+                                       const bool printPixelesProcesados, const int totalPixeles) {
+    for (unsigned alto = inicioFila; alto < finFila; ++alto) {
+        for (unsigned ancho = 0; ancho < numPxlsAncho; ++ancho) {
+            //if (printPixelesProcesados) printPixelActual(totalPixeles, numPxlsAncho, ancho, alto);
+
+            Rayo rayo(Direccion(0.0f, 0.0f, 0.0f), Punto());
+            rayo = camara.obtenerRayoCentroPixel(ancho, anchoPorPixel, alto, altoPorPixel);
+            globalizarYNormalizarRayo(rayo, camara.o, camara.f, camara.u, camara.l);
+            colorPixeles[alto][ancho] = obtenerRadianciaPixel(rayo, escena, mapaFotones, numFotones);
+        }
+    }
+}
+
+void renderizarRangoFilasPhotonMapAntialiasing(const Camara& camara, unsigned inicioFila, unsigned finFila,
+                                               unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel,
+                                               float altoPorPixel, vector<vector<RGB>>& colorPixeles,
+                                               const PhotonMap& mapaFotones, size_t numFotones,
+                                               const bool printPixelesProcesados, const int totalPixeles,
+                                               const unsigned rpp) {
+    for (unsigned alto = inicioFila; alto < finFila; ++alto) {
+        for (unsigned ancho = 0; ancho < numPxlsAncho; ++ancho) {
+            //if (printPixelesProcesados) printPixelActual(totalPixeles, numPxlsAncho, ancho, alto);
+
+            Rayo rayo(Direccion(0.0f, 0.0f, 0.0f), Punto());
+            RGB radianciaTotal;
+            for (unsigned i = 0; i < rpp; ++i) {
+                rayo = camara.obtenerRayoAleatorioPixel(ancho, anchoPorPixel, alto, altoPorPixel);
+                globalizarYNormalizarRayo(rayo, camara.o, camara.f, camara.u, camara.l);
+                radianciaTotal += obtenerRadianciaPixel(rayo, escena, mapaFotones, numFotones);
+            }
+
+            colorPixeles[alto][ancho] = radianciaTotal / rpp;
+        }
+    }
+}
+
+void renderizarEscenaConThreads(const Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
+                                const Escena& escena, const string& nombreEscena, const unsigned rpp,
+                                const int totalFotones, const bool printPixelesProcesados, unsigned numThreads) {
+    float anchoPorPixel = camara.calcularAnchoPixel(numPxlsAncho);
+    float altoPorPixel = camara.calcularAltoPixel(numPxlsAlto);
+    unsigned totalPixeles = numPxlsAncho * numPxlsAlto;
+
+    if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
+
+    PhotonMap mapaFotones;
+    size_t numFotones;
+    paso1GenerarPhotonMap(mapaFotones, numFotones, totalFotones, escena);
+
+    vector<vector<RGB>> colorPixeles(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
+
+    unsigned filasPorThread = numPxlsAlto / numThreads;
+    unsigned filasRestantes = numPxlsAlto % numThreads;
+
+    vector<thread> threads;
+    unsigned inicioFila = 0;
+
+    for (unsigned t = 0; t < numThreads; ++t) {
+        unsigned finFila = inicioFila + filasPorThread + (t < filasRestantes ? 1 : 0);
+
+        if (rpp == 1) {
+            threads.emplace_back(renderizarRangoFilasPhotonMap1RPP, std::ref(camara), inicioFila, finFila,
+                                 numPxlsAncho, std::ref(escena), anchoPorPixel, altoPorPixel,
+                                 std::ref(colorPixeles), std::ref(mapaFotones), numFotones,
+                                 printPixelesProcesados, totalPixeles);
+        } else {
+            threads.emplace_back(renderizarRangoFilasPhotonMapAntialiasing, std::ref(camara), inicioFila, finFila,
+                                 numPxlsAncho, std::ref(escena), anchoPorPixel, altoPorPixel,
+                                 std::ref(colorPixeles), std::ref(mapaFotones), numFotones,
+                                 printPixelesProcesados, totalPixeles, rpp);
+        }
+        inicioFila = finFila;
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
     pintarEscenaEnPPM(nombreEscena, colorPixeles);
 }
