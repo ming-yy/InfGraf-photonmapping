@@ -234,7 +234,7 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanza
     int numFotonesLanzados = 0;
     
     while(numRandomWalksRestantes > 0 && vecFotones.size() < vecFotones.max_size()){
-        if(numRandomWalksRestantes % 10000 == 0){ cout << "Fotones restantes: " << numRandomWalksRestantes << endl;}
+        if(numRandomWalksRestantes % 100000 == 0){ cout << "Fotones restantes: " << numRandomWalksRestantes << endl;}
         //cout << "Nuevo random path, numRandomWalksRestantes = " << numRandomWalksRestantes;
         //cout << ", numFotonesLanzados = " << numFotonesLanzados  << endl;
         numRandomWalksRestantes--;
@@ -258,9 +258,10 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
     return total;
 }
 
-void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar,
+void paso1GenerarPhotonMap(PhotonMap& mapaFotones, size_t& numFotones, const int totalFotonesALanzar,
                            const Escena& escena){
     vector<Photon> vecFotones;
+    //cout << vecFotones.max_size() << endl;
     //cout << "Generando " << totalFotonesALanzar << " fotones en total..." << endl;
     float potenciaTotal = calcularPotenciaTotal(escena.luces);
     //cout << "Potencia total: " << potenciaTotal << endl;
@@ -294,6 +295,8 @@ void paso1GenerarPhotonMap(PhotonMap& mapaFotones, const int totalFotonesALanzar
 
     //printVectorFotones(vecFotones);
     mapaFotones = std::move(generarPhotonMap(vecFotones));
+    numFotones = vecFotones.size();
+    cout << "Numero total de fotones guardados: " << numFotones << endl;
 }
 
 void printVectorFotones(const vector<Photon>& vecFotones){
@@ -306,37 +309,62 @@ RGB radianciaKernelConstante(const Photon* photon, const float radio){
     return photon->flujo/(M_PI * pow(radio, 2.0f));
 }
 
-RGB radianciaKernelGaussiano(const Photon* photon, const float radio, const Punto& centro){
-    float raizDosPi = sqrt(2*M_PI);
-    float cteNormalizacion = 1/(radio*raizDosPi);
+float distanciaEntreFotonYPunto(const Photon* photon, const Punto& centro){
     Punto puntoFoton = Punto(photon->coord);
-    float numeradorExp = pow((modulo(puntoFoton - centro)), 2);
-    float denominadorExp = 2*pow(radio, 2);
+    return modulo(puntoFoton - centro);
+}
+
+RGB radianciaKernelGaussiano(const Photon* photon, const float radioAFoton, 
+                                const float radioMaximo, const Punto& centro){
+    float raizDosPi = sqrt(2*M_PI);
+    float cteNormalizacion = 1/(radioMaximo*raizDosPi);
+    Punto puntoFoton = Punto(photon->coord);
+    float numeradorExp = pow(radioAFoton, 2);
+    float denominadorExp = 2*pow(radioMaximo, 2);
     float exponente = -numeradorExp/denominadorExp;
     float kernel = cteNormalizacion*pow(M_E, exponente);
     return photon->flujo*kernel;
 }
 
-RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, 
+float maximoRadio(const Punto& ptoIntersec, const vector<const Photon*> fotonesCercanos){
+    float maximoRadio = 0.0f;
+    for(auto& foton : fotonesCercanos){
+        float distanciaFoton = distanciaEntreFotonYPunto(foton, ptoIntersec);
+        if(distanciaFoton > maximoRadio){
+            maximoRadio = distanciaFoton;
+        }
+    }
+    return maximoRadio;
+}
+
+RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, const size_t numFotones,
                           const Punto& ptoIntersec, const Direccion& dirIncidente,
                           const Direccion& normal, const BSDFs& coefsPtoInterseccion){
     vector<const Photon*> fotonesCercanos;
-    float radio = 0.05f;
+    //float radio = 0.01f;
+    //fotonesCercanosPorRadio(mapaFotones, ptoIntersec.coord, radio, fotonesCercanos);
+    float porcentaje = 0.01;
+    unsigned long porcentajeFotones = static_cast<unsigned long>(numFotones*porcentaje);
+    fotonesCercanosPorNumFotones(mapaFotones, ptoIntersec.coord, static_cast<unsigned long>(porcentajeFotones), fotonesCercanos);
+    //cout << "Num fotones cercanos: " << fotonesCercanos.size() << endl;
+    float radioMaximo = maximoRadio(ptoIntersec, fotonesCercanos);
 
-    fotonesCercanosPorRadio(mapaFotones, ptoIntersec.coord, radio, fotonesCercanos);
     RGB radiancia(0.0f, 0.0f, 0.0f);
 
     for (const Photon* photon : fotonesCercanos) {
         if (photon) {
-            radiancia += radianciaKernelConstante(photon, radio);
-            //radiancia += radianciaKernelGaussiano(photon, radio, ptoIntersec);
+            //radiancia += radianciaKernelConstante(photon, radio);
+            radiancia += radianciaKernelGaussiano(photon, 
+                                                    distanciaEntreFotonYPunto(photon, ptoIntersec), 
+                                                    radioMaximo, ptoIntersec);
         }
     }
 
     return radiancia;
 }
 
-RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, const PhotonMap& mapaFotones) {
+RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, 
+                            const PhotonMap& mapaFotones, const size_t numFotones) {
     Punto ptoIntersec;
     Direccion normal;
     RGB radiancia(0.0f, 0.0f, 0.0f);
@@ -384,7 +412,7 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, const
     }
     
     if (choqueContraDifuso && hayInterseccion) {
-        radiancia = estimarEcuacionRender(escena, mapaFotones, ptoIntersec, wi.d,
+        radiancia = estimarEcuacionRender(escena, mapaFotones, numFotones, ptoIntersec, wi.d,
                                           normal, coefsPtoInterseccion);
     }
 
@@ -400,7 +428,7 @@ void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned anc
 
 void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
                     const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
-                    vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
+                    vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, const size_t numFotones,
                     const bool printPixelesProcesados, const int totalPixeles){
 
     for (unsigned ancho = 0; ancho < numPxlsAncho; ++ancho) {
@@ -410,7 +438,30 @@ void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const un
             Rayo rayo(Direccion(0.0f, 0.0f, 0.0f), Punto());
             rayo = camara.obtenerRayoCentroPixel(ancho, anchoPorPixel, alto, altoPorPixel);
             globalizarYNormalizarRayo(rayo, camara.o, camara.f, camara.u, camara.l);
-            colorPixeles[alto][ancho] = obtenerRadianciaPixel(rayo, escena, mapaFotones);
+            colorPixeles[alto][ancho] = obtenerRadianciaPixel(rayo, escena, mapaFotones, numFotones);
+        }
+    }
+}
+
+
+void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
+                    const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
+                    vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, const size_t numFotones,
+                    const bool printPixelesProcesados, const int totalPixeles, const unsigned rpp){
+
+    for (unsigned ancho = 0; ancho < numPxlsAncho; ++ancho) {
+        for (unsigned alto = 0; alto < numPxlsAlto; ++alto) {
+            if (printPixelesProcesados) printPixelActual(totalPixeles, numPxlsAncho, ancho, alto);
+
+            Rayo rayo(Direccion(0.0f, 0.0f, 0.0f), Punto());
+            RGB radianciaTotal;
+            for (unsigned i = 0; i < rpp; i++){
+                rayo = camara.obtenerRayoAleatorioPixel(ancho, anchoPorPixel, alto, altoPorPixel);
+                globalizarYNormalizarRayo(rayo, camara.o, camara.f, camara.u, camara.l);
+                radianciaTotal += obtenerRadianciaPixel(rayo, escena, mapaFotones, numFotones);
+            }
+
+            colorPixeles[alto][ancho] = radianciaTotal / rpp;
         }
     }
 }
@@ -428,14 +479,23 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
 
    
     PhotonMap mapaFotones;
-    paso1GenerarPhotonMap(mapaFotones, totalFotones, escena);
+    size_t numFotones;
+
+    paso1GenerarPhotonMap(mapaFotones, numFotones, totalFotones, escena);
     
     // Inicializado todo a color negro
     vector<vector<RGB>> colorPixeles(numPxlsAlto, vector<RGB>(numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 
-    paso2LeerPhotonMap1RPP(camara,  escena, numPxlsAncho, numPxlsAlto,
-                           anchoPorPixel, altoPorPixel, colorPixeles,
-                           mapaFotones, printPixelesProcesados, totalPixeles);
+    if(rpp == 1){
+        paso2LeerPhotonMap1RPP(camara,  escena, numPxlsAncho, numPxlsAlto,
+                            anchoPorPixel, altoPorPixel, colorPixeles,
+                            mapaFotones, numFotones, printPixelesProcesados, totalPixeles);
+    } else {
+        paso2LeerPhotonMapAntialiasing(camara,  escena, numPxlsAncho, numPxlsAlto,
+                            anchoPorPixel, altoPorPixel, colorPixeles,
+                            mapaFotones, numFotones, printPixelesProcesados, totalPixeles, rpp);
+    }
+
 
 
     /*

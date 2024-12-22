@@ -27,7 +27,7 @@ void fotonesCercanosPorNumFotones(const PhotonMap& photonMap, const array<float,
                         unsigned long numFotones, vector<const Photon*>& fotonesCercanos){
     fotonesCercanos = photonMap.nearest_neighbors(coordBusqueda,
                                                     numFotones,
-                                                    std::numeric_limits<float>::infinity());
+                                                    std::numeric_limits<float>::max());
 }
 
 void fotonesCercanosPorRadio(const PhotonMap& photonMap, const array<float, 3>& coordBusqueda,
