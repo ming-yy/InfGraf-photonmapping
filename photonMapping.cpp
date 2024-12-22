@@ -151,7 +151,7 @@ float calcCosenoAnguloIncidencia(const Direccion& d, const Direccion& n){
 }
 
 RGB calcBrdfDifusa(const RGB& kd){
-    return kd / M_PI;
+    return kd; // El M_PI que divide se anula con el de ProbDirRayo
 }
 
 void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
@@ -179,8 +179,7 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
         //cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
         return;
     } else if (tipoRayo == DIFUSO) {
-        radianciaActual = radianciaActual * calcBrdfDifusa(coefsOrigen.kd) *
-                          calcCosenoAnguloIncidencia(-wo_d, normal);
+        radianciaActual = radianciaActual * calcBrdfDifusa(coefsOrigen.kd);
         radianciaActual = radianciaActual / probTipoRayo;
         Photon foton = Photon(origen.coord, wo_d, radianciaActual);
         //cout << "Rayo difuso, metemos foton " << foton << endl;
@@ -190,8 +189,6 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
     float probDirRayo;
     Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo_d, normal, probDirRayo);
     
-    if (probDirRayo < 0.1) return;     // TERMINAL: rayo poco relevante
-
     BSDFs coefsPtoIntersec;
     Punto ptoIntersec;
     Direccion nuevaNormal;
@@ -201,7 +198,6 @@ void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
         return;
     }
     
-    radianciaActual = radianciaActual / probDirRayo;
     recursividadRandomWalk(vecFotones, escena, radianciaInicial, radianciaActual,
                            ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal);
 }
