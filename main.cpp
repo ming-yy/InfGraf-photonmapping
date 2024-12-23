@@ -95,8 +95,8 @@ void cajaDeCornell(){
 
     
     auto inicio = std::chrono::high_resolution_clock::now();
-    //renderizarEscena(cam, 1080, 1080, cornell, "cornell", rpp, numRandomWalks, printPixelesProcesados);
     renderizarEscenaConThreads(cam, 1080, 1080, cornell, "cornell", rpp, numRandomWalks, printPixelesProcesados);
+    //renderizarEscenaConThreads(cam, 128, 128, cornell, "cornell", rpp, numRandomWalks, printPixelesProcesados);
     auto fin = std::chrono::high_resolution_clock::now();
     printTiempo(inicio, fin);
 

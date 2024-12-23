@@ -318,15 +318,47 @@ float distanciaEntreFotonYPunto(const Photon* photon, const Punto& centro){
     return modulo(puntoFoton - centro);
 }
 
-RGB radianciaKernelGaussiano(const Photon* photon, const float radioAFoton, 
-                                const float radioMaximo, const Punto& centro){
+RGB radianciaKernelGaussiano(const Photon* photon, const float radioMaximo, 
+                                const Punto& centro){
+    float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
     float raizDosPi = sqrt(2*M_PI);
     float cteNormalizacion = 1/(radioMaximo*raizDosPi);
-    Punto puntoFoton = Punto(photon->coord);
     float numeradorExp = pow(radioAFoton, 2);
     float denominadorExp = 2*pow(radioMaximo, 2);
     float exponente = -numeradorExp/denominadorExp;
     float kernel = cteNormalizacion*pow(M_E, exponente);
+    return photon->flujo*kernel;
+}
+
+RGB radianciaKernelConico(const Photon* photon, const float radioMaximo, 
+                                const Punto& centro){
+    float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
+    float kernel = 1 - (radioAFoton/radioMaximo); // Hay que normalizarlo dividiendo por (1-2/3)??? mirar trabajo julia 3.2.1
+    return photon->flujo*kernel;
+}
+
+RGB radianciaKernelEpanechnikov(const Photon* photon, const float radioMaximo, 
+                                const Punto& centro){
+    float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
+    float divisionAlCuadrado = pow((radioAFoton/radioMaximo), 2);
+    float kernel = 2 * (1 - divisionAlCuadrado);
+    return photon->flujo*kernel;
+}
+
+RGB radianciaKernelBipeso(const Photon* photon, const float radioMaximo, 
+                                const Punto& centro){
+    float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
+    float divisionAlCuadrado = pow((radioAFoton/radioMaximo), 2);
+    float kernel = 3 * pow((1 - divisionAlCuadrado), 2);
+    return photon->flujo*kernel;
+}
+
+RGB radianciaKernelLogistico(const Photon* photon, const float radioMaximo, 
+                                const Punto& centro){
+    float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
+    float division = radioAFoton/radioMaximo;
+    float denominador = pow(M_E, division) + 2 + pow(M_E, -division);
+    float kernel = 1/denominador;
     return photon->flujo*kernel;
 }
 
@@ -358,9 +390,7 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, co
     for (const Photon* photon : fotonesCercanos) {
         if (photon) {
             //radiancia += radianciaKernelConstante(photon, radio);
-            radiancia += radianciaKernelGaussiano(photon, 
-                                                    distanciaEntreFotonYPunto(photon, ptoIntersec), 
-                                                    radioMaximo, ptoIntersec);
+            radiancia += radianciaKernelGaussiano(photon, radioMaximo, ptoIntersec);
         }
     }
 

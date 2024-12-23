@@ -116,6 +116,19 @@ void paso1GenerarPhotonMap(PhotonMap& mapaFotones, size_t& numFotones, const int
 void printVectorFotones(const vector<Photon>& vecFotones);
 
 // Función que...
+RGB radianciaKernelConstante(const Photon* photon, const float radio);
+
+// Función que...
+float distanciaEntreFotonYPunto(const Photon* photon, const Punto& centro);
+
+// Función que...
+RGB radianciaKernelGaussiano(const Photon* photon, const float radioMaximo, 
+                                const Punto& centro);
+                                
+// Función que...
+float maximoRadio(const Punto& ptoIntersec, const vector<const Photon*> fotonesCercanos);
+
+// Función que...
 RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, const size_t numFotones,
                         const Punto& ptoIntersec, const Direccion& dirIncidente,
                         const Direccion& normal, const BSDFs& coefsPtoInterseccion);
