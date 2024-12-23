@@ -10,6 +10,9 @@
 #include "gestorPPM.h"
 #include <random>
 #include <thread>
+#include <atomic>
+
+std::atomic<unsigned> pixelesProcesados{0};
 
 void getCoordenadasCartesianas(const float azimut, const float inclinacion,
                                 float& x, float& y, float& z) {
@@ -476,7 +479,6 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
     unsigned totalPixeles = numPxlsAlto * numPxlsAncho;
     
     if (printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
-
    
     PhotonMap mapaFotones;
     size_t numFotones;
@@ -499,6 +501,7 @@ void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const u
     pintarEscenaEnPPM(nombreEscena, colorPixeles);
 }
 
+
 void renderizarRangoFilasPhotonMap1RPP(const Camara& camara, unsigned inicioFila, unsigned finFila,
                                        unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel,
                                        float altoPorPixel, vector<vector<RGB>>& colorPixeles,
@@ -513,6 +516,9 @@ void renderizarRangoFilasPhotonMap1RPP(const Camara& camara, unsigned inicioFila
             globalizarYNormalizarRayo(rayo, camara.o, camara.f, camara.u, camara.l);
             colorPixeles[alto][ancho] = obtenerRadianciaPixel(rayo, escena, mapaFotones, numFotones);
         }
+
+        pixelesProcesados += numPxlsAncho;
+        cout << "Progreso: " << pixelesProcesados << " / " << totalPixeles << " pixeles procesados." << endl;
     }
 }
 
@@ -536,8 +542,12 @@ void renderizarRangoFilasPhotonMapAntialiasing(const Camara& camara, unsigned in
 
             colorPixeles[alto][ancho] = radianciaTotal / rpp;
         }
+        
+        pixelesProcesados += numPxlsAncho;
+        cout << "Progreso: " << pixelesProcesados << " / " << totalPixeles << " pixeles procesados." << endl;
     }
 }
+
 
 void renderizarEscenaConThreads(const Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
                                 const Escena& escena, const string& nombreEscena, const unsigned rpp,
@@ -564,16 +574,17 @@ void renderizarEscenaConThreads(const Camara& camara, unsigned numPxlsAncho, uns
         unsigned finFila = inicioFila + filasPorThread + (t < filasRestantes ? 1 : 0);
 
         if (rpp == 1) {
-            threads.emplace_back(renderizarRangoFilasPhotonMap1RPP, std::ref(camara), inicioFila, finFila,
-                                 numPxlsAncho, std::ref(escena), anchoPorPixel, altoPorPixel,
-                                 std::ref(colorPixeles), std::ref(mapaFotones), numFotones,
-                                 printPixelesProcesados, totalPixeles);
+            threads.emplace_back([&](unsigned inicio, unsigned fin) {
+                renderizarRangoFilasPhotonMap1RPP(camara, inicio, fin, numPxlsAncho, escena, anchoPorPixel, altoPorPixel, 
+                                                  colorPixeles, mapaFotones, numFotones, printPixelesProcesados, totalPixeles);
+            }, inicioFila, finFila);
         } else {
-            threads.emplace_back(renderizarRangoFilasPhotonMapAntialiasing, std::ref(camara), inicioFila, finFila,
-                                 numPxlsAncho, std::ref(escena), anchoPorPixel, altoPorPixel,
-                                 std::ref(colorPixeles), std::ref(mapaFotones), numFotones,
-                                 printPixelesProcesados, totalPixeles, rpp);
+            threads.emplace_back([&](unsigned inicio, unsigned fin) {
+                renderizarRangoFilasPhotonMapAntialiasing(camara, inicio, fin, numPxlsAncho, escena, anchoPorPixel, altoPorPixel,
+                                                          colorPixeles, mapaFotones, numFotones, printPixelesProcesados, totalPixeles, rpp);
+            }, inicioFila, finFila);
         }
+
         inicioFila = finFila;
     }
 
