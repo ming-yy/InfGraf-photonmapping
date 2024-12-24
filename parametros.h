@@ -21,10 +21,10 @@ public:
     int numRandomWalks;
     TipoVecinos tipoVecinosGlobales;
     unsigned long vecinosGlobalesNum;
-    unsigned long vecinosGlobalesRadio;
+    float vecinosGlobalesRadio;
     TipoVecinos tipoVecinosCausticos;
     unsigned long vecinosCausticosNum;
-    unsigned long vecinosCausticosRadio;
+    float vecinosCausticosRadio;
     bool luzIndirecta;
     bool printPixelesProcesados;
 
@@ -34,10 +34,10 @@ public:
                 const int _numRandomWalks,
                 TipoVecinos _tipoVecinosGlobales,
                 unsigned long _vecinosGlobalesNum,
-                unsigned long _vecinosGlobalesRadio,
+                float _vecinosGlobalesRadio,
                 TipoVecinos _tipoVecinosCausticos,
                 unsigned long _vecinosCausticosNum,
-                unsigned long _vecinosCausticosRadio,
-                bool luzIndirecta,
+                float _vecinosCausticosRadio,
+                const bool luzIndirecta,
                 const bool _printPixelesProcesados);
 };

@@ -81,7 +81,7 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    Parametros parametros(256, 256, 16, 500000, RADIONUMERO, 100, 10, NUMERO, 100, 0, false, true);
+    Parametros parametros(512, 512, 128, 50000000, RADIONUMERO, 1000, 0.025, NUMERO, 100, 0, false, true);
     
     renderizarEscenaConThreads(cam, cornell, "cornell", parametros);
 

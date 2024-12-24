@@ -468,6 +468,7 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
         } else {
             float probTipoRayo;
               // Opcion 1: puede salir absorbente
+            /*
             TipoRayo tipoRayo = dispararRuletaRusa(coefsPtoInterseccion, probTipoRayo);
             if (tipoRayo == ABSORBENTE) {       // TERMINAL: rayo absorbente
                 //cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
@@ -478,9 +479,10 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
                 float probDirRayo;
                 wi = obtenerRayoRuletaRusa(tipoRayo, ptoIntersec, wi.d, normal, probDirRayo);
             }
+            */
             
             
-            /*
+            
             // Opción 2: NO puede salir absorbente --> teóricamente está mal
             TipoRayo tipoRayo = ABSORBENTE;
             while (tipoRayo == ABSORBENTE) {
@@ -493,7 +495,7 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
                 float probDirRayo;
                 wi = obtenerRayoRuletaRusa(tipoRayo, ptoIntersec, wi.d, normal, probDirRayo);
             }
-            */
+            
         }
     }
     

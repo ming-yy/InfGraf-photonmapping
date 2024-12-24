@@ -6,10 +6,10 @@ Parametros::Parametros(const unsigned _numPxlsAncho,
                 const int _numRandomWalks,
                 TipoVecinos _tipoVecinosGlobales,
                 unsigned long _vecinosGlobalesNum,
-                unsigned long _vecinosGlobalesRadio,
+                float _vecinosGlobalesRadio,
                 TipoVecinos _tipoVecinosCausticos,
                 unsigned long _vecinosCausticosNum,
-                unsigned long _vecinosCausticosRadio,
+                float _vecinosCausticosRadio,
                 const bool _luzIndirecta,
                 const bool _printPixelesProcesados
                 )
