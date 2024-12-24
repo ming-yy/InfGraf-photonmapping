@@ -23,7 +23,7 @@ PhotonMap generarPhotonMap(vector<Photon>& vecFotones);
 // Método que devuelve por referencia en <fotonesCercanos> los fotos más cercanos
 // a la posición <coordBusqueda>, dado un radio de busqueda maximo <radio> y un
 // numero maximo de fotones a encontrar <numFotones>
-void fotonesCercanos(PhotonMap& photonMap, array<float, 3>& coordBusqueda, float radio,
+void fotonesCercanos(const PhotonMap& photonMap, const array<float, 3>& coordBusqueda, float radio,
                         unsigned long numFotones, vector<const Photon*>& fotonesCercanos);
 
 // Método que devuelve por referencia en <fotonesCercanos> los fotos más cercanos

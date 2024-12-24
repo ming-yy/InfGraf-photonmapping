@@ -87,28 +87,28 @@ RGB calcBrdfDifusa(const RGB& kd);
 // origen y una normal, guarda el fotón correspondiente en <vecFotones> si la
 // superficie es difusa. Luego vuelve a llamarse recursivamente con los parámetros
 // de la siguiente intersección, según el rayo devuelto tras la ruleta rusa.
-void recursividadRandomWalk(vector<Photon>& vecFotones, const Escena& escena,
-                            const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
-                            const BSDFs &coefsOrigen, const Direccion& normal);
+void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, bool& fotonCaustico, 
+                            const Escena& escena, const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen,
+                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal);
 
 // Método que, dada una luz, lanza un foton desde esa luz guarda los fotones que rebotan 
 // en las superficies difusas en <vecFotones> (hasta que el randomWalk termine por absorción, 
 // por no-intersección o por llegar al límite de vecFotones)
-void comenzarRandomWalk(vector<Photon>& vecFotones, const Escena& escena, const Rayo& wi,
-                        const RGB& flujoInicial, RGB& flujoRestante);
+void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos,
+                        const Escena& escena, const Rayo& wi, const RGB& flujoInicial, RGB& flujoRestante);
 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
-int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotones, const int numFotonesALanzar,
+int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, const int numFotonesALanzar,
                          const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena);
 
 // Función que devuelve la suma de los componentes maximos de las potencias de las <luces>
 float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 
-// Método que lanza max(<totalFotones>, vecFotones.max_size()) fotones en la escena 
-// y los guarda en <vecFotones>
-void paso1GenerarPhotonMap(PhotonMap& mapaFotones, size_t& numFotones, const int totalFotonesALanzar,
-                            const Escena& escena);
+// Método que ...
+void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotonesCausticos, 
+                            size_t& numFotonesGlobales, size_t& numFotonesCausticos,
+                            const int totalFotonesALanzar, const Escena& escena);
 
 
 // Método que imprime por pantalla un vector de fotones
@@ -128,9 +128,10 @@ RGB radianciaKernelGaussiano(const Photon* photon, const float radioMaximo,
 float maximoRadio(const Punto& ptoIntersec, const vector<const Photon*> fotonesCercanos);
 
 // Función que...
-RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, const size_t numFotones,
-                          const Punto& ptoIntersec, const Direccion& dirIncidente,
-                          const Direccion& normal, const BSDFs& coefsPtoInterseccion, const Parametros& parametros);
+RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlobales, const PhotonMap& mapaFotonesCausticos,
+                            const size_t numFotonesGlobales, const size_t numFotonesCausticos,
+                            const Punto& ptoIntersec, const Direccion& dirIncidente,
+                            const Direccion& normal, const BSDFs& coefsPtoInterseccion, const Parametros& parametros);
 
 // Función que, dado un rayo (que proviene de la cámara y atraviesa un pixel), una escena y
 // un mapa de fotones (producido por las luces de la escena), devuelve la radiancia del punto
@@ -138,7 +139,9 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, co
 // fotones cercanos al punto intersecado para aproximar la ecuación de render. Dicha radiancia será
 // el color que deberá tomar el pixel intersecado por el rayo
 RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, 
-                            const PhotonMap& mapaFotones, const size_t numFotones, const Parametros& parametros);
+                            const PhotonMap& mapaFotonesGlobales, const PhotonMap& mapaFotonesCausticos,
+                            const size_t numFotonesGlobales, const size_t numFotonesCausticos,
+                            const Parametros& parametros);
 
 // ...
 void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned ancho, unsigned alto);
@@ -146,13 +149,15 @@ void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned anc
 // Método que lee los fotones dispersados por <mapaFotones> vistos desde <camara>
 // y "colorea" los píxeles que forman la imagen usando la estimación de densidad de Kernel
 void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const float anchoPorPixel, 
-                    const float altoPorPixel, vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
-                    const size_t numFotones, const int totalPixeles, const Parametros& parametros);
+                    const float altoPorPixel, vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotonesGlobales,
+                    const PhotonMap& mapaFotonesCausticos, const size_t numFotonesGlobales, 
+                    const size_t numFotonesCausticos, const int totalPixeles, const Parametros& parametros);
 
 // ...
 void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, const float anchoPorPixel, 
-                    const float altoPorPixel, vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
-                    const size_t numFotones, const int totalPixeles, const Parametros& parametros);
+                    const float altoPorPixel, vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotonesGlobales,
+                    const PhotonMap& mapaFotonesCausticos, const size_t numFotonesGlobales, 
+                    const size_t numFotonesCausticos, const int totalPixeles, const Parametros& parametros);
 
 // Método que genera una imagen utilizando el photonMapping                 
 void renderizarEscena(const Camara& camara, const Escena& escena,
@@ -164,14 +169,16 @@ void renderizarEscena(const Camara& camara, const Escena& escena,
 void renderizarRangoFilasPhotonMap1RPP(const Camara& camara, unsigned inicioFila, unsigned finFila,
                                        const Escena& escena, float anchoPorPixel,
                                        float altoPorPixel, vector<vector<RGB>>& colorPixeles,
-                                       const PhotonMap& mapaFotones, size_t numFotones,
+                                       const PhotonMap& mapaFotonesGlobales, const PhotonMap& mapaFotonesCausticos,
+                                       const size_t numFotonesGlobales, const size_t numFotonesCausticos, 
                                        const int totalPixeles, const Parametros& parametros);
 
 void renderizarRangoFilasPhotonMapAntialiasing(const Camara& camara, unsigned inicioFila, unsigned finFila,
-                                                const Escena& escena, float anchoPorPixel,
-                                                float altoPorPixel, vector<vector<RGB>>& colorPixeles,
-                                                const PhotonMap& mapaFotones, size_t numFotones,
-                                                const int totalPixeles, const Parametros& parametros);
+                                       const Escena& escena, float anchoPorPixel,
+                                       float altoPorPixel, vector<vector<RGB>>& colorPixeles,
+                                       const PhotonMap& mapaFotonesGlobales, const PhotonMap& mapaFotonesCausticos,
+                                       const size_t numFotonesGlobales, const size_t numFotonesCausticos, 
+                                       const int totalPixeles, const Parametros& parametros);
 
 void renderizarEscenaConThreads(const Camara& camara, const Escena& escena, const string& nombreEscena, 
                                 const Parametros& parametros, unsigned numThreads = thread::hardware_concurrency());

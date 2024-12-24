@@ -9,7 +9,8 @@
 enum TipoVecinos {
     RADIO = 0,
     PORCENTAJE = 1,
-    NUMERO = 2
+    NUMERO = 2,
+    RADIONUMERO = 3
 };
 
 class Parametros {
@@ -18,15 +19,23 @@ public:
     unsigned numPxlsAlto;
     unsigned rpp;
     int numRandomWalks;
-    TipoVecinos tipoEstimacionVecinos;
-    unsigned long vecinos;
+    TipoVecinos tipoVecinosGlobales;
+    unsigned long vecinosGlobalesNum;
+    unsigned long vecinosGlobalesRadio;
+    TipoVecinos tipoVecinosCausticos;
+    unsigned long vecinosCausticosNum;
+    unsigned long vecinosCausticosRadio;
     bool printPixelesProcesados;
 
     Parametros(const unsigned _numPxlsAncho,
                 const unsigned _numPxlsAlto,
                 const unsigned _rpp,
                 const int _numRandomWalks,
-                TipoVecinos _tipoEstimacionVecinos,
-                const unsigned long _vecinos,
+                TipoVecinos _tipoVecinosGlobales,
+                unsigned long _vecinosGlobalesNum,
+                unsigned long _vecinosGlobalesRadio,
+                TipoVecinos _tipoVecinosCausticos,
+                unsigned long _vecinosCausticosNum,
+                unsigned long _vecinosCausticosRadio,
                 const bool _printPixelesProcesados);
 };

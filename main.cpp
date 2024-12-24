@@ -81,11 +81,9 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    Parametros parametros(32, 32, 64, 100000, NUMERO, 100, true);
+    Parametros parametros(32, 32, 64, 100000, NUMERO, 1000, 0, NUMERO, 1000, 0, true);
     
-    renderizarEscenaConThreads(cam, cornell, "zzz_cornell", parametros);
-    renderizarEscenaConThreads(cam, cornell, "zzz_cornell_1", parametros);
-    renderizarEscenaConThreads(cam, cornell, "zzz_cornell_2", parametros);
+    renderizarEscenaConThreads(cam, cornell, "cornell", parametros);
 
     liberarMemoriaDePrimitivas(objetos);
 }
