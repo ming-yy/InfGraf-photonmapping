@@ -26,7 +26,7 @@ public:
     unsigned long vecinosCausticosNum;
     unsigned long vecinosCausticosRadio;
     bool printPixelesProcesados;
-
+ 
     Parametros(const unsigned _numPxlsAncho,
                 const unsigned _numPxlsAlto,
                 const unsigned _rpp,
