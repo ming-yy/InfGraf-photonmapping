@@ -1,0 +1,32 @@
+//*****************************************************************
+// File:   parametros.h
+// Author: Ming Tao, Ye   NIP: 839757, Puig Rubio, Manel Jorda  NIP: 839304
+// Date:   diciembre 2024
+// Coms:   Práctica 5 de Informática Gráfica
+//*****************************************************************
+#pragma once
+
+enum TipoVecinos {
+    RADIO = 0,
+    PORCENTAJE = 1,
+    NUMERO = 2
+};
+
+class Parametros {
+public:
+    unsigned numPxlsAncho;
+    unsigned numPxlsAlto;
+    unsigned rpp;
+    int numRandomWalks;
+    TipoVecinos tipoEstimacionVecinos;
+    unsigned long vecinos;
+    bool printPixelesProcesados;
+
+    Parametros(const unsigned _numPxlsAncho,
+                const unsigned _numPxlsAlto,
+                const unsigned _rpp,
+                const int _numRandomWalks,
+                TipoVecinos _tipoEstimacionVecinos,
+                const unsigned long _vecinos,
+                const bool _printPixelesProcesados);
+};

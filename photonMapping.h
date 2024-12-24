@@ -14,7 +14,7 @@
 #include "base.h"
 #include <random>
 #include <optional>
-
+#include "parametros.h"
 
 enum TipoRayo {
     ABSORBENTE = -1,
@@ -22,7 +22,6 @@ enum TipoRayo {
     ESPECULAR = 1,
     REFRACTANTE = 2
 };
-
 
 // Método que devuelve las coordenadas cartesianas correspondientes de (azimut, inclinacion)
 void getCoordenadasCartesianas(const float azimut, const float inclinacion,
@@ -130,52 +129,49 @@ float maximoRadio(const Punto& ptoIntersec, const vector<const Photon*> fotonesC
 
 // Función que...
 RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotones, const size_t numFotones,
-                        const Punto& ptoIntersec, const Direccion& dirIncidente,
-                        const Direccion& normal, const BSDFs& coefsPtoInterseccion);
+                          const Punto& ptoIntersec, const Direccion& dirIncidente,
+                          const Direccion& normal, const BSDFs& coefsPtoInterseccion, const Parametros& parametros);
 
 // Función que, dado un rayo (que proviene de la cámara y atraviesa un pixel), una escena y
 // un mapa de fotones (producido por las luces de la escena), devuelve la radiancia del punto
 // de intersección entre el rayo y la escena, usando la estimación de densidad del kernel con los
 // fotones cercanos al punto intersecado para aproximar la ecuación de render. Dicha radiancia será
 // el color que deberá tomar el pixel intersecado por el rayo
-RGB obtenerRadianciaPixel(const Rayo& rayo, const Escena& escena, 
-                            const PhotonMap& mapaFotones, const size_t numFotones);
+RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, 
+                            const PhotonMap& mapaFotones, const size_t numFotones, const Parametros& parametros);
+
+// ...
+void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned ancho, unsigned alto);
 
 // Método que lee los fotones dispersados por <mapaFotones> vistos desde <camara>
 // y "colorea" los píxeles que forman la imagen usando la estimación de densidad de Kernel
-void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
-                    const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
-                    vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, const size_t numFotones,
-                    const bool printPixelesProcesados, const int totalPixeles);
+void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const float anchoPorPixel, 
+                    const float altoPorPixel, vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
+                    const size_t numFotones, const int totalPixeles, const Parametros& parametros);
 
 // ...
-void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, const unsigned numPxlsAncho, 
-                    const unsigned numPxlsAlto, const float anchoPorPixel, const float altoPorPixel,
-                    vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, const size_t numFotones,
-                    const bool printPixelesProcesados, const int totalPixeles, const unsigned rpp);
+void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, const float anchoPorPixel, 
+                    const float altoPorPixel, vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotones, 
+                    const size_t numFotones, const int totalPixeles, const Parametros& parametros);
 
 // Método que genera una imagen utilizando el photonMapping                 
-void renderizarEscena(const Camara& camara, const unsigned numPxlsAncho, const unsigned numPxlsAlto,
-                      const Escena& escena, const string& nombreEscena, const unsigned rpp,
-                      const int totalFotones, const bool printPixelesProcesados);
+void renderizarEscena(const Camara& camara, const Escena& escena,
+                    const string& nombreEscena, const Parametros& parametros);
 
 
 //////// Parelelización
 
 void renderizarRangoFilasPhotonMap1RPP(const Camara& camara, unsigned inicioFila, unsigned finFila,
-                                       unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel,
+                                       const Escena& escena, float anchoPorPixel,
                                        float altoPorPixel, vector<vector<RGB>>& colorPixeles,
                                        const PhotonMap& mapaFotones, size_t numFotones,
-                                       const bool printPixelesProcesados, const int totalPixeles);
+                                       const int totalPixeles, const Parametros& parametros);
 
 void renderizarRangoFilasPhotonMapAntialiasing(const Camara& camara, unsigned inicioFila, unsigned finFila,
-                                               unsigned numPxlsAncho, const Escena& escena, float anchoPorPixel,
-                                               float altoPorPixel, vector<vector<RGB>>& colorPixeles,
-                                               const PhotonMap& mapaFotones, size_t numFotones,
-                                               const bool printPixelesProcesados, const int totalPixeles,
-                                               const unsigned rpp);
+                                                const Escena& escena, float anchoPorPixel,
+                                                float altoPorPixel, vector<vector<RGB>>& colorPixeles,
+                                                const PhotonMap& mapaFotones, size_t numFotones,
+                                                const int totalPixeles, const Parametros& parametros);
 
-void renderizarEscenaConThreads(const Camara& camara, unsigned numPxlsAncho, unsigned numPxlsAlto,
-                                const Escena& escena, const string& nombreEscena, const unsigned rpp,
-                                const int totalFotones, const bool printPixelesProcesados,
-                                unsigned numThreads = thread::hardware_concurrency());
+void renderizarEscenaConThreads(const Camara& camara, const Escena& escena, const string& nombreEscena, 
+                                const Parametros& parametros, unsigned numThreads = thread::hardware_concurrency());

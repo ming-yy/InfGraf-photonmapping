@@ -24,18 +24,10 @@
 #include "esfera.h"
 #include "luzpuntual.h"
 #include "photonMapping.h"
+#include "parametros.h"
 
 
 
-void printTiempo(auto inicio, auto fin) {
-    auto duracion_total = std::chrono::duration_cast<std::chrono::seconds>(fin - inicio);
-    auto mins = std::chrono::duration_cast<std::chrono::minutes>(duracion_total);
-    auto segs = duracion_total - mins;
-
-    cout << endl << "=========================================" << endl;
-    cout << "TIEMPO DE EJECUCION: " << mins.count() << "min " << segs.count() << "s" << endl;
-    cout << "=========================================" << endl << endl;
-}
 
 void liberarMemoriaDePrimitivas(vector<Primitiva*>& objetos) {
     for (Primitiva* objeto : objetos) {
@@ -89,24 +81,13 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    const unsigned rpp = 32;
-    const int numRandomWalks = 100000;
-    const bool printPixelesProcesados = true;
-
+    Parametros parametros(32, 32, 64, 100000, NUMERO, 100, true);
     
-    auto inicio = std::chrono::high_resolution_clock::now();
-    renderizarEscenaConThreads(cam, 1080, 1080, cornell, "cornell", rpp, numRandomWalks, printPixelesProcesados);
-    //renderizarEscenaConThreads(cam, 128, 128, cornell, "cornell", rpp, numRandomWalks, printPixelesProcesados);
-    auto fin = std::chrono::high_resolution_clock::now();
-    printTiempo(inicio, fin);
+    renderizarEscenaConThreads(cam, cornell, "zzz_cornell", parametros);
+    renderizarEscenaConThreads(cam, cornell, "zzz_cornell_1", parametros);
+    renderizarEscenaConThreads(cam, cornell, "zzz_cornell_2", parametros);
 
     liberarMemoriaDePrimitivas(objetos);
-
-    transformarFicheroPPM("./cornell.ppm", 1);
-    transformarFicheroPPM("./cornell.ppm", 2);
-    transformarFicheroPPM("./cornell.ppm", 3);
-    transformarFicheroPPM("./cornell.ppm", 4);
-    transformarFicheroPPM("./cornell.ppm", 5);
 }
 
 

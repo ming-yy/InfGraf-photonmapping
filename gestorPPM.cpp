@@ -254,7 +254,7 @@ float maximoValorRGB(const vector<vector<RGB>>& matrizRGB) {
 }
 
 void pintarEscenaEnPPM(const string& nombreArchivo, const vector<vector<RGB>>& imagen) {
-    ofstream archivo(nombreArchivo + ".ppm");
+    ofstream archivo(nombreArchivo);
     if (!archivo) {
         cerr << "Error al abrir el archivo " << nombreArchivo << endl;
         return;
