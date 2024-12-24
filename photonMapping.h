@@ -89,18 +89,18 @@ RGB calcBrdfDifusa(const RGB& kd);
 // de la siguiente intersección, según el rayo devuelto tras la ruleta rusa.
 void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, bool& fotonCaustico, 
                             const Escena& escena, const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen,
-                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal);
+                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal, const bool luzIndirecta);
 
 // Método que, dada una luz, lanza un foton desde esa luz guarda los fotones que rebotan 
 // en las superficies difusas en <vecFotones> (hasta que el randomWalk termine por absorción, 
 // por no-intersección o por llegar al límite de vecFotones)
 void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos,
-                        const Escena& escena, const Rayo& wi, const RGB& flujoInicial, RGB& flujoRestante);
+                        const Escena& escena, const Rayo& wi, const RGB& flujoInicial, RGB& flujoRestante, const bool luzIndirecta);
 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
 int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, const int numFotonesALanzar,
-                         const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena);
+                         const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena, const bool luzIndirecta);
 
 // Función que devuelve la suma de los componentes maximos de las potencias de las <luces>
 float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
@@ -108,7 +108,7 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 // Método que ...
 void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotonesCausticos, 
                             size_t& numFotonesGlobales, size_t& numFotonesCausticos,
-                            const int totalFotonesALanzar, const Escena& escena);
+                            const int totalFotonesALanzar, const Escena& escena, const bool luzIndirecta);
 
 
 // Método que imprime por pantalla un vector de fotones

@@ -170,7 +170,7 @@ RGB calcBrdfDifusa(const RGB& kd){
 
 void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, bool& fotonCaustico, 
                             const Escena& escena, const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen,
-                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal) {
+                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal, const bool luzIndirecta) {
     if (vecFotonesGlobales.size() >= vecFotonesGlobales.max_size() ||
         vecFotonesCausticos.size() >= vecFotonesCausticos.max_size()) { // TERMINAL: no se pueden almacenar mas fotones
         cout << endl << "-- LIMITE DE FOTONES ALCANZADO --" << endl << endl;
@@ -203,6 +203,9 @@ void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& 
         } else {
             vecFotonesGlobales.push_back(foton);
         }
+
+        if(!luzIndirecta) return;
+
     } else { // ESPECULAR o REFRACTANTE
         if(!fotonCaustico) fotonCaustico = true;
     }
@@ -221,11 +224,11 @@ void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& 
     
     recursividadRandomWalk(vecFotonesGlobales, vecFotonesCausticos, fotonCaustico, 
                             escena, radianciaInicial, radianciaActual,
-                            ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal);
+                            ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal, luzIndirecta);
 }
 
 void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, const Escena& escena, const Rayo& wi,
-                        const RGB& flujoInicial, RGB& flujoRestante){
+                        const RGB& flujoInicial, RGB& flujoRestante, const bool luzIndirecta){
     Punto ptoIntersec;
     BSDFs coefsPtoInterseccion;
     Direccion normal;
@@ -242,8 +245,9 @@ void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecF
         //cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
         //cout << " y normal " <<  normal << endl;
         bool fotonCaustico = false;
-        recursividadRandomWalk(vecFotonesGlobales, vecFotonesCausticos, fotonCaustico, escena, flujoInicial, flujoRestante, ptoIntersec,
-                               wi.d, coefsPtoInterseccion, normal);
+        recursividadRandomWalk(vecFotonesGlobales, vecFotonesCausticos, fotonCaustico, escena,
+                                flujoInicial, flujoRestante, ptoIntersec,
+                                wi.d, coefsPtoInterseccion, normal, luzIndirecta);
     } else {
         //cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
     }
@@ -252,7 +256,7 @@ void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecF
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
 int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, const int numFotonesALanzar,
-                          const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena){
+                          const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena, const bool luzIndirecta){
     int numRandomWalksRestantes = numFotonesALanzar;
     int numFotonesLanzados = 0;
     
@@ -268,7 +272,7 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& ve
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
         //cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
         RGB flujoRestante = flujoPorFoton;
-        comenzarRandomWalk(vecFotonesGlobales, vecFotonesCausticos, escena, wi, flujoPorFoton, flujoRestante);
+        comenzarRandomWalk(vecFotonesGlobales, vecFotonesCausticos, escena, wi, flujoPorFoton, flujoRestante, luzIndirecta);
     }
 
     return numFotonesLanzados;
@@ -285,7 +289,7 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
 
 void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotonesCausticos,
                             size_t& numFotonesGlobales, size_t& numFotonesCausticos, 
-                            const int totalFotonesALanzar, const Escena& escena){
+                            const int totalFotonesALanzar, const Escena& escena, const bool luzIndirecta){
     vector<Photon> vecFotonesGlobales;
     vector<Photon> vecFotonesCausticos;
     //cout << vecFotones.max_size() << endl;
@@ -306,7 +310,7 @@ void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotone
         // y  realmente solo se pasa del límite del vector con totalFotonesALanzar
         // ridículamente altos
         lanzarFotonesDeUnaLuz(vecFotonesGlobales, vecFotonesCausticos, numFotonesALanzar,  
-                                                        flujoFoton, luz, escena);
+                                                        flujoFoton, luz, escena, luzIndirecta);
     }
 
     //printVectorFotones(vecFotones);
@@ -562,8 +566,9 @@ void renderizarEscena(const Camara& camara, const Escena& escena,
     PhotonMap mapaFotonesCausticos;
     size_t numFotonesGlobales;
     size_t numFotonesCausticos;
-
-    paso1GenerarPhotonMap(mapaFotonesGlobales, mapaFotonesCausticos, numFotonesGlobales, numFotonesCausticos, parametros.numRandomWalks, escena);
+    
+    paso1GenerarPhotonMap(mapaFotonesGlobales, mapaFotonesCausticos, numFotonesGlobales, 
+                            numFotonesCausticos, parametros.numRandomWalks, escena, parametros.luzIndirecta);
     
     // Inicializado todo a color negro
     vector<vector<RGB>> colorPixeles(parametros.numPxlsAlto, vector<RGB>(parametros.numPxlsAncho, {0.0f, 0.0f, 0.0f}));
@@ -643,14 +648,12 @@ void renderizarEscenaConThreads(const Camara& camara, const Escena& escena, cons
     float altoPorPixel = camara.calcularAltoPixel(parametros.numPxlsAlto);
     unsigned totalPixeles = parametros.numPxlsAncho * parametros.numPxlsAlto;
 
-    if (parametros.printPixelesProcesados) cout << "Procesando pixeles..." << endl << "0 pixeles de " << totalPixeles << endl;
-
     PhotonMap mapaFotonesGlobales;
     PhotonMap mapaFotonesCausticos;
     size_t numFotonesGlobales;
     size_t numFotonesCausticos;
     paso1GenerarPhotonMap(mapaFotonesGlobales, mapaFotonesCausticos, numFotonesGlobales,
-                            numFotonesCausticos, parametros.numRandomWalks, escena);
+                            numFotonesCausticos, parametros.numRandomWalks, escena, parametros.luzIndirecta);
 
     vector<vector<RGB>> colorPixeles(parametros.numPxlsAlto, vector<RGB>(parametros.numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 
@@ -660,6 +663,7 @@ void renderizarEscenaConThreads(const Camara& camara, const Escena& escena, cons
     vector<thread> threads;
     unsigned inicioFila = 0;
 
+    if(parametros.printPixelesProcesados) cout << "Progreso: 0 / " << totalPixeles << " pixeles procesados." << endl;
     for (unsigned t = 0; t < numThreads; ++t) {
         unsigned finFila = inicioFila + filasPorThread + (t < filasRestantes ? 1 : 0);
 

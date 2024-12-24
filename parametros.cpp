@@ -10,7 +10,9 @@ Parametros::Parametros(const unsigned _numPxlsAncho,
                 TipoVecinos _tipoVecinosCausticos,
                 unsigned long _vecinosCausticosNum,
                 unsigned long _vecinosCausticosRadio,
-                const bool _printPixelesProcesados)
+                const bool _luzIndirecta,
+                const bool _printPixelesProcesados
+                )
 
                 : rpp(_rpp),
                 numRandomWalks(_numRandomWalks),
@@ -22,6 +24,7 @@ Parametros::Parametros(const unsigned _numPxlsAncho,
                 vecinosGlobalesRadio(_vecinosGlobalesRadio),
                 tipoVecinosCausticos(_tipoVecinosCausticos),
                 vecinosCausticosNum(_vecinosCausticosNum),
-                vecinosCausticosRadio(_vecinosCausticosRadio)
+                vecinosCausticosRadio(_vecinosCausticosRadio),
+                luzIndirecta(_luzIndirecta)
                 {}
 

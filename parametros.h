@@ -25,8 +25,9 @@ public:
     TipoVecinos tipoVecinosCausticos;
     unsigned long vecinosCausticosNum;
     unsigned long vecinosCausticosRadio;
+    bool luzIndirecta;
     bool printPixelesProcesados;
- 
+
     Parametros(const unsigned _numPxlsAncho,
                 const unsigned _numPxlsAlto,
                 const unsigned _rpp,
@@ -37,5 +38,6 @@ public:
                 TipoVecinos _tipoVecinosCausticos,
                 unsigned long _vecinosCausticosNum,
                 unsigned long _vecinosCausticosRadio,
+                bool luzIndirecta,
                 const bool _printPixelesProcesados);
 };

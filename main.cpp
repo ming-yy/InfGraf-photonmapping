@@ -52,11 +52,11 @@ void cajaDeCornell(){
     objetos.push_back(new Plano({0.0f, 1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano suelo, blanco
     objetos.push_back(new Plano({0.0f, -1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano techo, blanco
     objetos.push_back(new Plano({0.0f, 0.0f, -1.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano fondo, blanco
-    objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({1.0f, 1.0f, 1.0f}), "espejo")); // esfera izquierda, blanca
-    //objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.89f, 0.45f, 0.82f}), "plastico")); // esfera izquierda, rosa
+    //objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({1.0f, 1.0f, 1.0f}), "espejo")); // esfera izquierda, blanca
+    objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.89f, 0.45f, 0.82f}), "muy_difuso")); // esfera izquierda, rosa
     //objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "muy_difuso")); // esfera izquierda, azul
-    //objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "dielectrico")); // esfera derecha, azul
-    objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({1.0f, 1.0f, 1.0f}), "cristal")); // esfera derecha, blanca
+    objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "muy_difuso")); // esfera derecha, azul
+    //objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({1.0f, 1.0f, 1.0f}), "cristal")); // esfera derecha, blanca
     vector<LuzPuntual> luces;
 
     RGB potencia(1.0f, 1.0f, 1.0f);
@@ -81,7 +81,7 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    Parametros parametros(32, 32, 64, 100000, NUMERO, 1000, 0, NUMERO, 1000, 0, true);
+    Parametros parametros(256, 256, 16, 500000, RADIONUMERO, 100, 10, NUMERO, 100, 0, false, true);
     
     renderizarEscenaConThreads(cam, cornell, "cornell", parametros);
 
