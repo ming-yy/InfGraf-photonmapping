@@ -19,3 +19,5 @@ void clampAndEqualize(vector<float>& valores, const float threshold);
 void gamma(vector<float>& valores, const float maxValue);
 
 void gammaAndClamp(vector<float>& valores, const float threshold);
+
+void reinhard(vector<float>& valores, const float lmax);

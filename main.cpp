@@ -83,7 +83,9 @@ void cajaDeCornell(){
 
     Parametros parametros(512, 512, 128, 50000000, RADIONUMERO, 1000, 0.025, NUMERO, 100, 0, false, true);
     
-    renderizarEscenaConThreads(cam, cornell, "cornell", parametros);
+    //renderizarEscenaConThreads(cam, cornell, "cornell", parametros);
+
+    transformarFicheroPPM("./cornell.ppm", 6);
 
     liberarMemoriaDePrimitivas(objetos);
 }

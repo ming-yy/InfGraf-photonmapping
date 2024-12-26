@@ -7,7 +7,6 @@
 
 #include "toneMapping.h"
 
-
 // GAMMA puede ser otro, pero 2.2 es un valor común
 // utilizado para la corrección gamma en monitores estándar.
 const float GAMMA = 2.2;
@@ -50,4 +49,17 @@ void gammaAndClamp(vector<float>& valores, const float threshold){
             valores[i] = 1; // Clamping
         }
     }
+}
+
+
+void reinhard(vector<float>& valores, const float lmax){
+    
+    equalize(valores, lmax/2.5);
+   
+    for(size_t i = 0; i < valores.size(); i++){
+            float c = valores[i];
+            //cout << c << endl;
+            valores[i] = (c * (1 + (c / pow(lmax, 2)))) / (1 + c);
+    }
+   
 }
