@@ -72,8 +72,9 @@ Rayo obtenerRayoRuletaRusa(const TipoRayo tipoRayo, const Punto& origen, const D
 
 // Función que realiza una selección probabilística del tipo de rayo que
 // será disparado (difuso, especular o refractante) basándose en los coeficientes
-// de la superficie (kd, ks, kt) proporcionados por <coefs>.
-TipoRayo dispararRuletaRusa(const BSDFs& coefs, float& probRuleta);
+// de la superficie (kd, ks, kt) proporcionados por <coefs>. <hayAbsorbente> indica si queremos
+// que haya rayos absorbentes.
+TipoRayo dispararRuletaRusa(const BSDFs& coefs, float& probRuleta, const bool hayAbsorbente = true);
 
 // Función que calcula el coseno del ángulo de incidencia, es decir, el ángulo formado
 // por <n> y <d>. En general, <n> será la normal y <d> la otra dirección.
