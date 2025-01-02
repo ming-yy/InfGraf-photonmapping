@@ -27,7 +27,15 @@
 #include "parametros.h"
 
 
+void comprobarRelacionAspecto(const Camara& camUtilizada, const float ratioPantalla){
+    float ratioCamara = modulo(camUtilizada.l) / modulo(camUtilizada.u);
 
+    if (abs(ratioCamara - ratioPantalla) > MARGEN_ERROR) {
+        cerr << "No coincide el ratio entre la camara y la pantalla." << endl;
+        cerr << "ratioCamara = " << ratioCamara << ", ratioPantalla = " << ratioPantalla << endl;
+        std::exit(EXIT_FAILURE);
+    }
+}
 
 void liberarMemoriaDePrimitivas(vector<Primitiva*>& objetos) {
     for (Primitiva* objeto : objetos) {
@@ -68,6 +76,16 @@ void cajaDeCornell(){
                         {0.0f, 0.0f, 3.0f},
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
+
+    Camara cam16_9 = Camara({0.0f, 0.0f, -3.5f},
+                        {0.0f, 0.0f, 3.0f},
+                        {0.0f, 0.9f, 0.0f},
+                        {-1.6f, 0.0f, 0.0f});
+                        
+    Camara cam9_16 = Camara({0.0f, 0.0f, -3.5f},
+                        {0.0f, 0.0f, 3.0f},
+                        {0.0f, 1.6f, 0.0f},
+                        {-0.9f, 0.0f, 0.0f});
     
     // Zoom esfera izquierda
     Camara cam2 = Camara({-0.5f, -0.5f, -0.5f},
@@ -81,9 +99,15 @@ void cajaDeCornell(){
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
 
-    Parametros parametros(256, 256, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, false, true);
+    Camara camUtilizada = cam;
+    const unsigned int pixelesAncho = 256;
+    const unsigned int pixelesAlto = 256;
+
+    Parametros parametros(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, false, true);
     
-    renderizarEscenaConThreads(cam, cornell, "cornell", parametros);
+    comprobarRelacionAspecto(camUtilizada, static_cast<float>(pixelesAncho)/static_cast<float>(pixelesAlto));
+
+    renderizarEscenaConThreads(camUtilizada, cornell, "cornell", parametros);
 
     transformarFicheroPPM("./cornell.ppm", 6);
 

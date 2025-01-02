@@ -38,7 +38,7 @@ void Plano::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) co
     
     float numerador = (-1) * (d + dot(rayo.o, n));
     float t = numerador / denominador;
-    if (t <= 0) {
+    if (t <= MARGEN_ERROR_INTERSEC) {
         //cout << "No hay intersección en la dirección positiva del rayo." << endl;
         return;
     }
