@@ -549,8 +549,7 @@ void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, 
 void renderizarEscena(const Camara& camara, const Escena& escena,
                     const string& nombreEscena, const Parametros& parametros) {
     pixelesProcesados = 0;
-    float anchoPorPixel = camara.calcularAnchoPixel(parametros.numPxlsAncho);
-    float altoPorPixel = camara.calcularAltoPixel(parametros.numPxlsAlto);
+    float tamanoPorPixel = std::min(camara.calcularAnchoPixel(parametros.numPxlsAncho), camara.calcularAltoPixel(parametros.numPxlsAlto));
     unsigned totalPixeles = parametros.numPxlsAlto * parametros.numPxlsAncho;
        
     PhotonMap mapaFotonesGlobales;    
@@ -565,11 +564,11 @@ void renderizarEscena(const Camara& camara, const Escena& escena,
     vector<vector<RGB>> colorPixeles(parametros.numPxlsAlto, vector<RGB>(parametros.numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 
     if(parametros.rpp == 1){
-        paso2LeerPhotonMap1RPP(camara, escena, anchoPorPixel, altoPorPixel, colorPixeles,
+        paso2LeerPhotonMap1RPP(camara, escena, tamanoPorPixel, tamanoPorPixel, colorPixeles,
                             mapaFotonesGlobales, mapaFotonesCausticos, numFotonesGlobales, 
                             numFotonesCausticos, totalPixeles, parametros);
     } else {
-        paso2LeerPhotonMapAntialiasing(camara, escena, anchoPorPixel, altoPorPixel, colorPixeles,
+        paso2LeerPhotonMapAntialiasing(camara, escena, tamanoPorPixel, tamanoPorPixel, colorPixeles,
                             mapaFotonesGlobales, mapaFotonesCausticos, numFotonesGlobales, 
                             numFotonesCausticos, totalPixeles, parametros);
     }
@@ -659,14 +658,14 @@ void renderizarEscenaConThreads(const Camara& camara, const Escena& escena, cons
 
         if (parametros.rpp == 1) {
             threads.emplace_back([&](unsigned inicio, unsigned fin) {
-                renderizarRangoFilasPhotonMap1RPP(camara, inicio, fin, escena, anchoPorPixel, 
-                                                    altoPorPixel, colorPixeles, mapaFotonesGlobales, mapaFotonesCausticos, 
+                renderizarRangoFilasPhotonMap1RPP(camara, inicio, fin, escena, tamanoPorPixel, 
+                                                    tamanoPorPixel, colorPixeles, mapaFotonesGlobales, mapaFotonesCausticos, 
                                                     numFotonesGlobales, numFotonesCausticos, totalPixeles, parametros);
             }, inicioFila, finFila);
         } else {
             threads.emplace_back([&](unsigned inicio, unsigned fin) {
-                renderizarRangoFilasPhotonMapAntialiasing(camara, inicio, fin, escena, anchoPorPixel, 
-                                                            altoPorPixel, colorPixeles, mapaFotonesGlobales, mapaFotonesCausticos, 
+                renderizarRangoFilasPhotonMapAntialiasing(camara, inicio, fin, escena, tamanoPorPixel, 
+                                                            tamanoPorPixel, colorPixeles, mapaFotonesGlobales, mapaFotonesCausticos, 
                                                     numFotonesGlobales, numFotonesCausticos, totalPixeles, parametros);
             }, inicioFila, finFila);
         }
