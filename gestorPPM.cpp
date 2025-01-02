@@ -202,7 +202,7 @@ string transformarValores(vector<float>& valores, const int tipoTransform, const
         gammaAndClamp(valores, maxValue);
         break;
 
-    case 6:     // FUNCION GAMMA+EQUALIZATION
+    case 6:     // FUNCION REINHARD
         res = "6_Reinhard";
         reinhard(valores, maxValue);
         break;

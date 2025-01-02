@@ -635,8 +635,7 @@ void renderizarEscenaConThreads(const Camara& camara, const Escena& escena, cons
     pixelesProcesados = 0;
     auto inicio = std::chrono::high_resolution_clock::now();
 
-    float anchoPorPixel = camara.calcularAnchoPixel(parametros.numPxlsAncho);
-    float altoPorPixel = camara.calcularAltoPixel(parametros.numPxlsAlto);
+    float tamanoPorPixel = std::min(camara.calcularAnchoPixel(parametros.numPxlsAncho), camara.calcularAltoPixel(parametros.numPxlsAlto));
     unsigned totalPixeles = parametros.numPxlsAncho * parametros.numPxlsAlto;
 
     PhotonMap mapaFotonesGlobales;
