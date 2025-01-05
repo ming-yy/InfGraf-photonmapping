@@ -13,14 +13,22 @@
 
 class Esfera: public Primitiva {
 public:
-    Punto centro;   // Generalmente en UCS
+    // Punto central de la esfera. Generalmente en UCS
+    Punto centro;
+
+    // Radio de la esfera
     float radio;
     
-    
+    // Constructor base
     Esfera();
+
+    // Constructor dado un centro y un radio, con opcionales de un RGB color, 
+    // un material, una potencia (emision, sera luz de area), y una ruta al archivo
+    // ppm en caso de que se le quiera poner textura
     Esfera(const Punto& _centro, const float& _radio,
            const RGB& _reflectancia = RGB(1.0f, 1.0f, 1.0f),
-           const string _material = "difuso", const RGB& _power = RGB());
+           const string _material = "difuso", const RGB& _power = RGB(),
+           const string rutaTextura = "");
     Esfera(const Planeta& p);
     
     // Método para calcular la intersección entre un rayo y la esfera
@@ -32,7 +40,7 @@ public:
     // IMPORTANTE: si el rayo tiene origen en un punto perteneciente a la primitiva, no cuenta.
     void interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) const override;
     
-    // Mëtodo que devuelve "True" si y solo si el punto <p0> pertecene a la esfera.
+    // Método que devuelve "True" si y solo si el punto <p0> pertecene a la esfera.
     bool pertenece(const Punto& p0) const override;
     
     // Método que devuelve la normal de la primitiva en el punto <punto>
@@ -45,6 +53,14 @@ public:
     // Método que devuelve un punto aleatorio de la esfera en UCS.
     // También devuelve en <prob> la probabilidad de muestrear dicho punto.
     Punto generarPuntoAleatorio(float& prob) const override;
+    
+    // Método que obtiene la posición del punto <pto> de la esfera en el eje U de la
+    // textura correspondiente. Tenemos garantizado que <pto> pertenece al objeto.
+    float getEjeTexturaU(const Punto& pto) const override;
+    
+    // Método que obtiene la posición del punto <pto> de la esfera en el eje V de la
+    // textura correspondiente. Tenemos garantizado que <pto> pertenece al objeto.
+    float getEjeTexturaV(const Punto& pto) const override;
     
     // Debug
     void diHola() const override;

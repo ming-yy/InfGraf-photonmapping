@@ -13,8 +13,9 @@
 Esfera::Esfera(): Primitiva(), centro(Punto()), radio(0.0f) {}
 
 Esfera::Esfera(const Punto& _centro, const float& _radio, const RGB& _reflectancia,
-               const string _material, const RGB& _power) :
-               Primitiva(_reflectancia, _material, _power), centro(_centro), radio(_radio)  {}
+               const string _material, const RGB& _power, const string rutaTextura) :
+               Primitiva(_reflectancia, _material, _power, rutaTextura), centro(_centro),
+               radio(_radio)  {}
 
 Esfera::Esfera(const Planeta& p) : Primitiva(), centro(p.centro), radio(p.radio) {}
 
@@ -34,7 +35,7 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) c
         float t2 = (-b - sqrt(discriminante)) / (2 * a);
         Punto p1 = rayo.o + rayo.d * t1;
         Punto p2 = rayo.o + rayo.d * t2;
-        if (t1 > MARGEN_ERROR_INTERSEC && t2 > MARGEN_ERROR_INTERSEC) {
+        if (t1 > MARGEN_ERROR && t2 > MARGEN_ERROR) {
             if (modulo(rayo.o - p1) < modulo(rayo.o - p2)) {    // Primero interseca con p1
                 ptos.push_back(p1);
                 ptos.push_back(p2);
@@ -43,10 +44,10 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) c
                 ptos.push_back(p1);
             }
             
-        } else if (t1 > MARGEN_ERROR_INTERSEC) {
+        } else if (t1 > MARGEN_ERROR) {
             ptos.push_back(p1);
             
-        } else if (t2 > MARGEN_ERROR_INTERSEC) {
+        } else if (t2 > MARGEN_ERROR) {
             ptos.push_back(p2);
         }
         
@@ -60,7 +61,7 @@ void Esfera::interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) c
     } else if (discriminante == 0) {  // Caso de una solución única
         float t = -b / (2 * a);
         Punto puntoInterseccion = rayo.o + rayo.d * t;
-        if (t > MARGEN_ERROR_INTERSEC) {
+        if (t > MARGEN_ERROR) {
             ptos.push_back(puntoInterseccion);
             coefs = this->coeficientes;
         }
@@ -85,7 +86,7 @@ Direccion Esfera::getNormal(const Punto& punto) const {
 }
 
 bool Esfera::puntoEsFuenteDeLuz(const Punto& punto) const {
-    return this->pertenece(punto) && this->soyFuenteDeLuz();
+    return soyFuenteDeLuz() && this->pertenece(punto);
 }
 
 Punto Esfera::generarPuntoAleatorio(float& prob) const {
@@ -102,13 +103,24 @@ Punto Esfera::generarPuntoAleatorio(float& prob) const {
     float y = radio * sin(theta) * sin(phi);
     float z = radio * cos(theta);
 
-    Punto puntoAleatorio(this->centro.coord[0] + x, this->centro.coord[1] + y, this->centro.coord[2] + z);
+    Punto puntoAleatorio(this->centro + Punto(x,y,z));
     float areaSuperficie = 4.0f * M_PI * radio * radio;
     prob = 1.0f / areaSuperficie;
 
     return puntoAleatorio;
 }
 
+float Esfera::getEjeTexturaU(const Punto& pto) const {
+    Direccion d = normalizar(pto - this->centro);
+    return 0.5 - asin(d.coord[1]) / M_PI;
+}
+
+float Esfera::getEjeTexturaV(const Punto& pto) const {
+    Direccion d = normalizar(pto - this->centro);
+    return 0.5 + atan2(d.coord[2], d.coord[0]) / (2 * M_PI);
+}
+
 void Esfera::diHola() const {
-    cout << "Soy esfera: centro = " << this->centro << ", radio = " << this->radio << endl;
+    cout << "Soy esfera: centro = " << this->centro << ", radio = " << this->radio <<
+            ", power = " << this->power << endl;
 }

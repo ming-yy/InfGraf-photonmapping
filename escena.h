@@ -14,21 +14,27 @@
 
 class Escena {
 public:
-    vector<Primitiva*> primitivas;   // Array de los objetos de la escena
-    vector<LuzPuntual> luces;        // Array de luces puntuales de la escena
+    // Vector de los objetos de la escena
+    vector<Primitiva*> primitivas;
+
+    // Vector de luces puntuales de la escena
+    vector<LuzPuntual> luces;        
     
+    // Constructor base
     Escena();
+
+    // Constructor dado un vector de objetos y un vector de luces puntuales
     Escena(vector<Primitiva*> _primitivas, vector<LuzPuntual> _luces);
     
     // Método que devuelve "True" si y solo si hay intersección entre el rayo <rayo> y algún
-    // objeto de la escena. En caso de haber intersección, los coeficientes del punto por el
-    // que interseca el rayo <rayo> con el primer objeto que se encuentre en la escena es
-    // devuelta en <coefsObjeto>, el punto mencionado es devuelto en <ptoMasCerca> y en
-    // <powerLuzArea> devolverá el power de la fuente de luz si y solo si el objeto se trata
-    // de una fuente de luz. También devuelve la normal del punto más cercano respecto del
-    // objeto al que pertenece.
-    bool interseccion(const Rayo& rayo, BSDFs& coefsObjeto, Punto& ptoMasCerca,
-                      Direccion& normal) const;
+    // objeto de la escena. En caso de haber intersección, el primer objeto de la escena con
+    // el que interseca el rayo <rayo> es devuelto en <objIntersecado>, el punto por el que
+    // interseca <rayo> con <objIntersecado> es devuelto en <ptoMasCerca> y en <powerLuzArea>
+    // devolverá el power de la fuente de luz si y solo si el objeto se trata de una fuente
+    // de luz. También devuelve la normal del punto más cercano respecto del objeto al que
+    // pertenece.
+    bool interseccion(const Rayo& rayo, Punto& ptoMasCerca, Direccion& normal,
+                      Primitiva** objIntersecado) const;
     
     // Función que devuelve "True" si y solo si el punto p0 pertenece a una fuente de luz. Además,
     // si devuelve "True", también devolverá en <powerLuzArea> el power de dicha luz.
