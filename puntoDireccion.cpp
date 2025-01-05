@@ -24,8 +24,7 @@ float dot(const PuntoDireccion& d1, const PuntoDireccion& d2) {
 
 ostream& operator<<(ostream& os, const PuntoDireccion& r)
 {
-    os << std::defaultfloat << std::setprecision(9) << "[" << r.coord[0] << ", " << r.coord[1] << ", "
-       << r.coord[2] << "]";
-
+    os << std::defaultfloat << std::setprecision(9) << "[" << r.coord[0] << ", " << r.coord[1]
+       << ", " << r.coord[2] << "]";
     return os;
 }
