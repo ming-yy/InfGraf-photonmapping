@@ -14,7 +14,7 @@
 ifstream abrir_fichero(const string& nombreFich) {
     ifstream fichero(nombreFich);
     if (!fichero.is_open()) {
-        cerr << "Error al abrir el fichero: " << nombreFich << endl;
+        throw runtime_error("Error al abrir el fichero: " + nombreFich);
         exit(1); // Salir del programa si no se puede abrir el fichero
     }
     return fichero;
@@ -79,7 +79,8 @@ void leer_valores(ifstream& fichero, float maxColorRes, float c, vector<float>& 
 }
 
 
-void imprimir_resultados(const vector<float>& valores, float maxColorRes, size_t alto, size_t ancho, float c) {
+void imprimir_resultados(const vector<float>& valores, float maxColorRes, size_t alto,
+                         size_t ancho, float c) {
     /*
     // DEBUG
     cout << "Valores resultantes:" << endl;
@@ -95,8 +96,8 @@ void imprimir_resultados(const vector<float>& valores, float maxColorRes, size_t
 }
 
 
-bool leerFicheroPPM(const string&nombreFich, vector<float>& valores,
-                            float& maxColorRes, size_t& ancho, size_t& alto, float& c) {
+bool leerFicheroPPM(const string&nombreFich, vector<float>& valores, float& maxColorRes,
+                    size_t& ancho, size_t& alto, float& c) {
     ifstream fichero = abrir_fichero(nombreFich);
     if (!validar_formato(fichero)) {
         return false;
@@ -110,8 +111,8 @@ bool leerFicheroPPM(const string&nombreFich, vector<float>& valores,
 }
 
 
-void escribirCabeceraPPM(ofstream& fichero, const string nombreFichero, 
-        const float maxColorRes, const size_t ancho, const size_t alto, const float c){
+void escribirCabeceraPPM(ofstream& fichero, const string nombreFichero, const float maxColorRes,
+                         const size_t ancho, const size_t alto, const float c){
     fichero << "P3" << "\n";
     fichero << "#MAX=" << fixed << setprecision(0) << maxColorRes << "\n";
     fichero << "# " << nombreFichero << "\n";
@@ -120,8 +121,8 @@ void escribirCabeceraPPM(ofstream& fichero, const string nombreFichero,
 }
 
 
-void escribirValoresPPM(ofstream& fichero, const vector<float>& valores,
-                        const float maxColorRes, const size_t ancho, const size_t alto, const float c){
+void escribirValoresPPM(ofstream& fichero, const vector<float>& valores, const float maxColorRes,
+                        const size_t ancho, const size_t alto, const float c){
     size_t anchoTriple = ancho*3;
     if (valores.size() != anchoTriple * alto){
         cerr << "ERROR: El tamano (ancho x alto) del fichero de entrada es incorrecto" << endl;
