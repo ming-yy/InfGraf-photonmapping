@@ -7,3 +7,6 @@
 *.ppm
 *.ppm#
 .vscode/settings.json
+*.ppm
+!texturas/
+!texturas/*.ppm
