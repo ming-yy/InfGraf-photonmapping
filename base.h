@@ -17,12 +17,23 @@ class Base {
 public:
     array<array<float, 3>, 3> base;
 
+    // Constructor default
     Base();
+
+    // Constructor a partir de otra base
     Base(const Base& b);
+    
+    // Constructor a partir de una lista de listas de valores float
     Base(init_list<init_list<float>> valores);
+
+    // Constructor a partir de un array de 3 arrays, de 3 float cada uno
     Base(array<array<float, 3>, 3> valores);
+    
+    // Constructor a partir de de 3 arrays, de 3 float cada uno
     Base(const array<float, 3>& arr1, const array<float, 3>& arr2,
          const array<float, 3>& arr3);
+
+    // Constructor a partir de un array de 3 direcciones
     Base(const Direccion& arr1, const Direccion& arr2, const Direccion& arr3);
     
     // Función para mostrar por pantalla la base <b>
