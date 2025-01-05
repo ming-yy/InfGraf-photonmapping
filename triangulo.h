@@ -15,13 +15,30 @@
 
 class Triangulo : public Primitiva {
 public:
-    Punto v0, v1, v2;
+    Punto p0, p1, p2;
+    Direccion n0, n1, n2;
+    float u0, u1, u2;
+    float v0, v1, v2;
 
     Triangulo();
-    Triangulo(const Punto& _v0, const Punto& _v1, const Punto& _v2, 
+    Triangulo(const Punto& _p0, const Punto& _p1, const Punto& _p2, 
               const RGB& _reflectancia = RGB(1.0f, 1.0f, 1.0f),
-              const string _material = "difuso", const RGB& _power = RGB());
+              const string _material = "difuso", const string rutaTextura = "",
+              const RGB& _power = RGB());
 
+    Triangulo(const Punto& _p0, const Punto& _p1, const Punto& _p2,
+              const float _u, const float _v, const RGB& _reflectancia = RGB(1.0f, 1.0f, 1.0f),
+              const string _material = "difuso", const string rutaTextura = "",
+              const RGB& _power = RGB());
+
+    Triangulo(const Punto& _p0, const Punto& _p1, const Punto& _p2,
+                     const float _u0, const float _u1, const float _u2,
+                     const float _v0, const float _v1, const float _v2,
+                     const Direccion& _n0, const Direccion& _n1, const Direccion& _n2,
+                     const RGB& _reflectancia = RGB(1.0f, 1.0f, 1.0f),
+                    const string _material = "difuso", const string rutaTextura = "",
+                    const RGB& _power = RGB());
+    
     // Método para calcular la intersección entre un rayo y el triángulo
     // Algoritmo usado: Möller–Trumbore
     //
@@ -32,20 +49,37 @@ public:
     // IMPORTANTE: si el rayo tiene origen en un punto perteneciente a la primitiva, no cuenta.
     void interseccion(const Rayo& rayo, vector<Punto>& ptos, BSDFs& coefs) const override;
     
-    // Mëtodo que devuelve "True" si y solo si el punto <p0> pertecene al triángulo.
-    bool pertenece(const Punto& p0) const override;
+    // Funcion que, dado un punto, devuelve valor true y las coordenadas baricentricas
+    // por los parametros por referencia <u> y <v>, o false si no se han podido calcular
+    bool getCoordBaricentricas(const Punto& punto, float& u, float& v) const;
+
+    // Funcion que devuelve "True" si y solo si el punto <p0> pertecene al triángulo.
+    bool pertenece(const Punto& punto) const override;
     
-    // Método que devuelve la normal de la primitiva en el punto <punto>
+    // Funcion que devuelve la normal de la primitiva en el punto <punto>
     Direccion getNormal(const Punto& punto) const override;
+
+    // Funcion que devuelve la normal interpolada por las normales de los 3 vertices
+    // de la primitiva en el punto <punto>
+    Direccion getNormalInterpolada(const Punto& punto) const;
     
-    // Método que devuelve "True" si y solo si <punto> pertenece al triángulo
+    // Funcion que devuelve "True" si y solo si <punto> pertenece al triángulo
     // y además, es un punto lumínico del triángulo.
     bool puntoEsFuenteDeLuz(const Punto& punto) const override;
     
-    // Método que devuelve un punto aleatorio del triángulo en UCS.
+    // Funcion que devuelve un punto aleatorio del triángulo en UCS.
     // También devuelve en <prob> la probabilidad de muestrear dicho punto.
     Punto generarPuntoAleatorio(float& prob) const override;
     
+    // Funcion que obtiene la posición del punto <pto> del triángulo en el eje U de la
+    // textura correspondiente. Tenemos garantizado que <pto> pertenece al objeto.
+    float getEjeTexturaU(const Punto& pto) const override;
+    
+    // Funcion que obtiene la posición del punto <pto> del triángulo en el eje V de la
+    // textura correspondiente. Tenemos garantizado que <pto> pertenece al objeto.
+    float getEjeTexturaV(const Punto& pto) const override;
+    
     // Debug
     void diHola() const override;
+
 };
