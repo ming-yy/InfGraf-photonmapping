@@ -19,22 +19,34 @@
 
 class Planeta {
 public:
-    Punto centro;   // En UCS
-    Direccion eje;  // Modulo debe ser doble del radio
-    Punto cref;     // En UCS
+
+    // Punto donde se situa el centro de la esfera. En UCS.
+    Punto centro;
+
+    // Direccion del eje. Su modulo debe ser doble del radio
+    Direccion eje;
+
+    // Punto donde se situa la ciudad de referencia. En UCS.
+    Punto cref;     
+
+    // Radio de la esfera
     float radio;
-    array<float, 2> estacion;  // [inclinacion, azimut] respecto a <cref>
-                               // inclin = (0, pi)   azimut = (-pi, pi]
-    array<float, 3> coordLocEstac; // Coord locales de estación respecto centro planeta
+    
+    // Coordenadas polares de la estación
+    // [inclinacion, azimut] respecto a <cref>
+    // inclin = (0, pi)   azimut = (-pi, pi]
+    array<float, 2> estacion;
+
+    // Coord locales de estación respecto centro planeta
+    array<float, 3> coordLocEstac;
     RGB reflectancia;    // (r,g,b)
-    
-    // De momento NO SIRVE PARA NADA
-    //Direccion normal;   // Respecto a la superficie de la estación y tiene módulo 1
-    //Direccion tangLong; // Respecto a superficie planeta y 90º con eje planeta
-    //Direccion tangLat;  // Respecto superficie planeta y 90º con <tangLong>
-    
-    
+   
+    // Constructor base    
     Planeta();
+
+    // Constructor dado un punto centro, una direccion eje, un punto donde esta
+    // la ciudad de referencia, un angulo de inclinacion y otro azimut (coord polares
+    // de la estacion, y un valor RGB que representa el color del planeta
     Planeta(const Punto& _centro, const Direccion& _eje, const Punto& _cref,
             const float& inclinacion, const float& azimut,
             const RGB& _reflectancia = RGB({255.0f, 255.0f, 255.0f}));
