@@ -12,9 +12,10 @@
 
 
 Camara::Camara() : o(Punto(0.0f, 0.0f, -3.5f)),
-                   f(Direccion(-1.0f, 0.0f, 0.0f)),
-                   u(Direccion(0.0f, 0.0f, 3.0f)),
-                   l(Direccion(0.0f, 1.0f, 0.0f)) {}
+                   f(Direccion(0.0f, 0.0f, 3.0f)),
+                   u(Direccion(0.0f, 1.0f, 0.0f)),
+                   l(Direccion(-1.0f, 0.0f, 0.0f))
+                   {}
 
 
 Camara::Camara(init_list<float> _o, init_list<float> _f, init_list<float> _u,
@@ -32,7 +33,7 @@ Camara::Camara(init_list<float> _o, init_list<float> _f, init_list<float> _u,
         
         auto it_l = _l.begin();
         l = Direccion(*(it_l), *(it_l + 1), *(it_l + 2));
-
+        
     } else {
         throw invalid_argument("Inicializadores deben contener 3 elementos cada uno.");
     }
@@ -47,8 +48,8 @@ Direccion Camara::obtenerDireccionEsquinaPixel(unsigned coordAncho, float anchoP
                                     unsigned coordAlto, float altoPorPixel) const {
     float x = modulo(this->f);
     float y = modulo(this->u) - coordAlto * altoPorPixel;
-    float z = - modulo(this->l) + coordAncho * anchoPorPixel;
-    return Direccion(x,y,z);
+    float z = -modulo(this->l) + (coordAncho * anchoPorPixel);
+    return Direccion(x, y, z);
 }
 
 

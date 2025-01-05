@@ -7,16 +7,9 @@
 
 #include "bsdfs.h"
 #include <map>
-#include <array>
-
-constexpr int KD_i = 0;  // coef difuso
-constexpr int KS_i = 1;  // coef especular (reflexión)
-constexpr int KT_i = 2;  // coef transmitancia (refracción)
-
-using FloatArray = std::array<float, 4>;
 
 
-std::map<string, FloatArray> materiales{
+std::map<string, array<float, 3>> materiales{
     {"muy_difuso", {0.9f, 0.0f, 0.0f}},
     {"difuso", {0.55f, 0.0f, 0.0f}},
     {"poco_difuso", {0.3f, 0.0f, 0.0f}},
@@ -28,18 +21,20 @@ std::map<string, FloatArray> materiales{
 
 BSDFs::BSDFs() {
     RGB _color(1.0f, 1.0f, 1.0f);
-    FloatArray coefs = materiales["difuso"];
+    array<float, 3> coefs = materiales["difuso"];
     kd = _color * coefs[KD_i];
     ks = _color * coefs[KS_i];
     kt = _color * coefs[KT_i];
+    sinEmision = coefs;
 }
 
 
 BSDFs::BSDFs(const RGB& _color, const string _material) {
-    FloatArray coefs = materiales[_material];
+    array<float, 3> coefs = materiales[_material];
     kd = _color * coefs[KD_i];
     ks = _color * coefs[KS_i];
     kt = _color * coefs[KT_i];
+    sinEmision = coefs;
 }
 
 BSDFs::BSDFs(const RGB& _color, const RGB& _kd, const RGB& _ks, const RGB& _kt) {

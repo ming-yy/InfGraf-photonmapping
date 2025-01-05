@@ -16,38 +16,53 @@
 
 class Camara {
 public:
-    Punto o;
-    Direccion f;
-    Direccion u;
-    Direccion l;
+      // Punto de origen
+      Punto o;
 
-    Camara();
-    Camara(Punto& _o, Direccion& _f, Direccion& _l, Direccion& _u);
-    Camara(init_list<float> _o, init_list<float> _f, init_list<float> _u,
-          init_list<float> _l);
+      // Vector (dirección) frontal
+      Direccion f;
 
-    // Método que ...
-    float calcularAnchoPixel(unsigned numPixeles) const;
-    
-    // Método que ...
-    float calcularAltoPixel(unsigned numPixeles) const;
+      // Vector (dirección) hacia arriba
+      Direccion u;
 
-    // Método que devuelve la direccion que hay hacia la esquina superior izquierda
-    // en el plano de proyeccion del pixel (ancho, alto)
-    Direccion obtenerDireccionEsquinaPixel(unsigned coordAncho, float anchoPorPixel,
-                                      unsigned coordAlto, float altoPorPixel) const;
+      // Vector (dirección) hacia la izquierda
+      Direccion l;
 
-    // Método que devuelve el rayo que va desde la cámara hasta
-    // la esquina superior izquierda del pixel (ancho, alto)
-    Rayo obtenerRayoEsquinaPixel(unsigned coordAncho, float anchoPorPixel,
-                                 unsigned coordAlto, float altoPorPixel) const;
+      // Constructor base
+      Camara();
 
-    // Método que devuelve el rayo que va desde la cámara hasta
-    // el centro del pixel (ancho, alto)
-    Rayo obtenerRayoCentroPixel(unsigned coordAncho, float anchoPorPixel,
-                                unsigned coordAlto, float altoPorPixel) const;
-    // Método que devuelve el rayo que va desde la cámara hasta
-    // un punto aleatorio del pixel (ancho, alto)
-    Rayo obtenerRayoAleatorioPixel(unsigned coordAncho, float anchoPorPixel,
-                                   unsigned coordAlto, float altoPorPixel) const;
+      // Constructor dado un punto de origen y 3 direcciones ortonormales
+      Camara(Punto& _o, Direccion& _f, Direccion& _l, Direccion& _u);
+
+      // Constructor dado un punto de origen y 3 direcciones ortonormales
+      // (con listas de 3 floats)
+      Camara(init_list<float> _o, init_list<float> _f, init_list<float> _u,
+            init_list<float> _l);
+
+      // Método que calcula el ancho que debería tener un pixel teniendo en cuenta
+      // el vector l y el numero de pixeles de ancho pasado por parametro
+      float calcularAnchoPixel(unsigned numPixeles) const;
+      
+      // Método que calcula el alto que debería tener un pixel teniendo en cuenta
+      // el vector u y el numero de pixeles de alto pasado por parametro
+      float calcularAltoPixel(unsigned numPixeles) const;
+
+      // Método que devuelve la direccion que hay hacia la esquina superior izquierda
+      // en el plano de proyeccion del pixel (ancho, alto)
+      Direccion obtenerDireccionEsquinaPixel(unsigned coordAncho, float anchoPorPixel,
+                                          unsigned coordAlto, float altoPorPixel) const;
+
+      // Método que devuelve el rayo que va desde la cámara hasta
+      // la esquina superior izquierda del pixel (ancho, alto)
+      Rayo obtenerRayoEsquinaPixel(unsigned coordAncho, float anchoPorPixel,
+                                    unsigned coordAlto, float altoPorPixel) const;
+
+      // Método que devuelve el rayo que va desde la cámara hasta
+      // el centro del pixel (ancho, alto)
+      Rayo obtenerRayoCentroPixel(unsigned coordAncho, float anchoPorPixel,
+                                    unsigned coordAlto, float altoPorPixel) const;
+      // Método que devuelve el rayo que va desde la cámara hasta
+      // un punto aleatorio del pixel (ancho, alto)
+      Rayo obtenerRayoAleatorioPixel(unsigned coordAncho, float anchoPorPixel,
+                                    unsigned coordAlto, float altoPorPixel) const;
 };
