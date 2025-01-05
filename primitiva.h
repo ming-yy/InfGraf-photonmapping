@@ -10,6 +10,7 @@
 #include "rayo.h"
 #include "rgb.h"
 #include "bsdfs.h"
+#include "textura.h"
 #include <vector>
 #include <string>
 #include <initializer_list>
@@ -18,18 +19,37 @@
 // Clase abstracta que todas las primitivas geométricas deben heredar
 class Primitiva {
 public:
+    // Coeficientes BSDF del objeto
     BSDFs coeficientes;
-    RGB power;
-    float idxRefraccion;
 
+    // Potencia (emision) en caso de que sea luz de area (sino 0,0,0)
+    RGB power;
+
+    // Textura, en caso de que la tenga
+    Textura textura;
+
+    // Constructor base
     Primitiva();
-    Primitiva(const RGB& color, const string material, const RGB& _power);
+
+    // Constructor dado un color, un material, una potencia (emision) y la ruta
+    // a una textura
+    Primitiva(const RGB& color, const string material, const RGB& _power,
+              const string& rutaTextura = "");
+
+    // Constructor dado un color, tres coeficientes (difuso, especular y transmision),
+    // una potencia (emision) y la ruta a una textura
     Primitiva(const RGB& color, const array<float, 3> kd, const array<float, 3> ks,
-              const array<float, 3> kt, const RGB& _power);
+              const array<float, 3> kt, const RGB& _power, const string& rutaTextura = "");
     
     // Destructor virtual para asegurar que los destructores de las clases derivadas
     // se llamen correctamente.
     virtual ~Primitiva() = default;
+        
+    // Método que devuelve el coeficiente kd de la primitiva en el punto <p>.
+    virtual RGB kd(const Punto& p) const;
+    
+    // Método que devuelve el coeficiente kd de la primitiva asumiendo que tiene textura.
+    RGB kd_Textura(const Punto& p) const;
     
     // Devuelve en <ptos> un vector con los puntos de intersección en UCS del rayo <rayo>
     // con el objeto. Si hay dos puntos de intersección, el primer elemento introducido
@@ -54,6 +74,17 @@ public:
     // Método virtual que devuelve un punto aleatorio de la primitiva.
     // También devuelve en <prob> la probabilidad de muestrear dicho punto.
     virtual Punto generarPuntoAleatorio(float& prob) const = 0;
+    
+    // Método virtual que obtiene la posición del punto <pto> de la primitiva en el
+    // eje U de la textura correspondiente. Tenemos garantizado que <pto> pertenece al objeto.
+    virtual float getEjeTexturaU(const Punto& pto) const = 0;
+    
+    // Método virtual que obtiene la posición del punto <pto> de la primitiva en el
+    // eje V de la textura correspondiente. Tenemos garantizado que <pto> pertenece al objeto.
+    virtual float getEjeTexturaV(const Punto& pto) const = 0;
+    
+    // Método que devuelve "true" si y solo si la primitiva tiene textura.
+    bool tengoTextura() const;
     
     // Debug
     virtual void diHola() const = 0;

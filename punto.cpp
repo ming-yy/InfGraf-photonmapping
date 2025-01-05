@@ -54,3 +54,8 @@ Punto& Punto::operator=(const Punto& p) {
     }
     return *this;  // Devuelve la referencia al objeto actual
 }
+
+Punto Punto::puntoMedio(const Punto& p) const {
+    return Punto((coord[0] + p.coord[0]) / 2, (coord[1] + p.coord[1]) / 2, (coord[2] + p.coord[2]) / 2);
+}
+
