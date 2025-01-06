@@ -16,7 +16,9 @@
 #include "utilidades.h"
 #include "rgb.h"
 
-
+// Clase que representa un planeta esferico con una ciudad de referencia
+// y una estacion, ambas en la superficie del planeta. Solo utilizada durante
+// las practicas intermedias de la asignatura
 class Planeta {
 public:
 

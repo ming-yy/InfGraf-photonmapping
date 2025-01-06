@@ -11,15 +11,26 @@
 #include <iostream>
 #include "utilidades.h"
 
+// Clase que representa una tripleta de 3 valores Rojo, Verde y Azul
 class RGB {
 public:
+    // Vector que contiene los 3 valores R, G y B en ese orden
     array<float,3> rgb;
 
+    // Constructor base
     RGB();
+
+    // Constructor a partir de 3 floats
     RGB(const float& r, const float& g, const float& b);
+
+    // Constructor a partir de una lista de floats (coge los 3 primeros)
     RGB(init_list<float> _rgb);
+
+    // Constructor a partir de un array de 3 floats
     RGB(const array<float, 3>& _rgb);
-    RGB(const RGB& other) = default; // constructor de copia
+
+    // Constructor de copia
+    RGB(const RGB& other) = default;
     
 
     // Operación de suma de dos RGB
@@ -31,6 +42,7 @@ public:
     // Operación de multiplicación entre un escalar y el RGB
     RGB operator*(const float escalar) const;
 
+    // Operación de multiplicación entre el RGB y otro RGB
     RGB operator*(const RGB& d) const;
     
     // Operación de división entre un escalar y el RGB
@@ -57,6 +69,7 @@ public:
     // Función que devuelve "True" si y solo si el RGB <a> vale todo 0.
     friend bool valeCero(const RGB& a);
     
+    // Función para mostrar por pantalla la información del RGB
     friend ostream& operator<<(ostream& os, const RGB& r);
 
 private:

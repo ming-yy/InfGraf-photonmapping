@@ -9,7 +9,7 @@
 #include "punto.h"
 #include "rgb.h"
 
-
+// Clase que representa un punto en el espacio que emite luz
 class LuzPuntual {
 public:
 

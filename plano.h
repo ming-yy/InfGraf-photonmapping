@@ -14,7 +14,7 @@
 #include "utilidades.h"
 #include "rgb.h"
 
-
+// Clase que representa un objeto geométrico plano infinito. Hereda de Primitiva.
 class Plano : public Primitiva {
 public:
     // Centro del plano teniendo en cuenta la distancia <d>

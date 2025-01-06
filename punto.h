@@ -12,6 +12,8 @@
 #include "matriz.h"
 #include "utilidades.h"
 
+// Clase que representa un punto en el espacio, respecto a un punto
+// de origen. Hereda de PuntoDireccion
 class Punto : public PuntoDireccion {
 public:
     // Coordenadas del punto de origen

@@ -13,6 +13,8 @@ enum TipoVecinos {
     RADIONUMERO = 3
 };
 
+// Clase auxiliar que permite pasar todos los parametros de una ejecución de
+// photon mapping como un solo objeto
 class Parametros {
 public:
     unsigned numPxlsAncho;

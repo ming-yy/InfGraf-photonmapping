@@ -12,7 +12,7 @@
 #include <cmath>
 #include <stdexcept>  // Para manejar excepciones
 
-
+// Clase que representa una direccion en el espacio. Hereda de PuntoDireccion
 class Direccion : public PuntoDireccion {
 public:
     // Constructor base

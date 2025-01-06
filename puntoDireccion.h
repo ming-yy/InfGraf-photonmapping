@@ -11,7 +11,7 @@
 #include "matriz.h"
 #include "utilidades.h"
 
-
+// Clase abstracta padre a Punto y Direccion, contiene una tripleta de coordenadas x,y,z
 class PuntoDireccion {
 public:
     // Coordenadas x, y, z

@@ -49,8 +49,8 @@ RGB RGB::operator/(const float escalar) const {
 }
 
 RGB& RGB::operator=(const RGB& r) {
-    if (this != &r) {
-        this->rgb = r.rgb;
+    if (this != &r) {  // Evitar auto-asignación
+        this->rgb = r.rgb;  // Asigna las coordenadas
     }
     return *this;
 }
@@ -106,6 +106,7 @@ bool valeCero(const RGB& a) {
 }
 
 ostream& operator<<(ostream& os, const RGB& r){
-    os << "[r=" << r.rgb[0] << ", g=" << r.rgb[1] << ", b=" << r.rgb[2] << "]";
+    os << std::defaultfloat << std::setprecision(9) <<
+         "[r=" << r.rgb[0] << ", g=" << r.rgb[1] << ", b=" << r.rgb[2] << "]";
     return os;
 }

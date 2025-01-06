@@ -11,6 +11,7 @@
 #include "rgb.h"
 #include "utilidades.h"
 
+// Clase que representa una esfera geometrica en el espacio. Hereda de Primitiva
 class Esfera: public Primitiva {
 public:
     // Punto central de la esfera. Generalmente en UCS

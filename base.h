@@ -12,7 +12,7 @@
 #include "direccion.h"
 #include "utilidades.h"
 
-
+// Clase que representa una base formada por 3 vectores
 class Base {
 public:
     array<array<float, 3>, 3> base;

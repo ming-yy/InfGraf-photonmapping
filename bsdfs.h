@@ -15,7 +15,8 @@ constexpr int KD_i = 0;  // coef difuso
 constexpr int KS_i = 1;  // coef especular (reflexión)
 constexpr int KT_i = 2;  // coef transmitancia (refracción)
 
-
+// Clase que representa los coeficientes de reflexión difusa,
+// reflexión especular y transmisión
 class BSDFs {
 public:
     // Coeficiente de reflexión difusa

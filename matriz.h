@@ -13,7 +13,7 @@
 #include <iomanip>
 #include "utilidades.h"
 
-
+// Clase auxiliar que representa una Matriz de floats
 template <size_t Filas, size_t Columnas>
 class Matriz {
 public:

@@ -14,7 +14,8 @@
 #include "bsdfs.h"
 #include "utilidades.h"
 
-
+// Clase que representa un objeto geometrico cuboide en el espacio.
+// Hereda de Primitiva
 class Cuboide : public Primitiva {
 public:
     // Vector de los 6 planos que definen el cuboide

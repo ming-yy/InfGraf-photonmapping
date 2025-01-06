@@ -12,6 +12,8 @@
 #include "luzpuntual.h"
 #include "utilidades.h"
 
+// Clase que representa una escena como un conjunto de objetos geometricos y una
+// serie de luces puntuales que iluminan los objetos
 class Escena {
 public:
     // Vector de los objetos de la escena

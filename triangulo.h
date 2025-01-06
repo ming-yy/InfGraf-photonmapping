@@ -12,7 +12,8 @@
 #include "primitiva.h"
 #include "utilidades.h"
 
-
+// Clase que representa un objeto triangular (plano)
+// Hereda de la clase Primitiva
 class Triangulo : public Primitiva {
 public:
     Punto p0, p1, p2;

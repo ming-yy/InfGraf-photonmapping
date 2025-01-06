@@ -11,6 +11,8 @@
 #include "triangulo.h"
 #include "esfera.h"
 
+// Clase que representa una malla de triángulos, con sus caras triangulares y sus vertices
+// Hereda de la clase Primitiva
 class Mesh : public Primitiva {
 public:
     // Vector de triangulos que representan las caras de la malla 

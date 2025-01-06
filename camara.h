@@ -13,7 +13,8 @@
 #include "utilidades.h"
 #include <initializer_list>
 
-
+// Clase que representa una camara desde la que se ve la escena,
+// desde donde se trazan los rayos, etc
 class Camara {
 public:
       // Punto de origen

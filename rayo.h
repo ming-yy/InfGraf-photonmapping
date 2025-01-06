@@ -11,7 +11,7 @@
 #include "utilidades.h"
 #include <memory>
 
-
+// Clase que representa un rayo, es decir, una direccion que comienza en un punto
 class Rayo {
 public:
     // Direccion del rayo

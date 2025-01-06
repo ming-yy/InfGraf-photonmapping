@@ -10,7 +10,7 @@
 #include "rgb.h"
 #include <vector>
 
-
+// Clase que representa la textura (colores) de una malla de triangulos (mesh)
 class Textura {
 public:
     // Pixeles de ancho y alto que tiene la textura
