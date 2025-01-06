@@ -71,7 +71,10 @@ public:
     // eje V de la textura correspondiente.
     float getEjeTexturaV(const Punto& pto) const override;
 
-    // Funcion que
+    // Funcion que devuelve una esfera que contiene todos los vertices de la malla
+    // Es la esfera formada por el punto central entre los 2 vertices mas distantes
+    // de la malla como centro de la esfera, y de radio tiene la distancia entre el
+    // punto central y cualquiera de esos 2 vertices mas distantes
     Esfera minimumBoundingSphere();
 
     
