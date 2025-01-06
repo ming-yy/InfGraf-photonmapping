@@ -30,7 +30,7 @@ public:
     // Sirven para calcular texturas.
     Direccion u, v;
     
-    // Distancia respecto del centro (0,0,0)
+    // Distancia en el sentido opuesto de la normal <n> y respecto del centro <centroSinDistancia>
     float d;
 
     // Límites para la luz de área
