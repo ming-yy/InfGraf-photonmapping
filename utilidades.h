@@ -27,6 +27,7 @@ constexpr float MARGEN_ERROR = 1e-6f;          // Para calcular intersecciones
 constexpr float MARGEN_ERROR_PERTENECE_PLANO = 5e-5f;          // Para calculos generales (intersecciones, etc.)
 constexpr float MARGEN_ERROR_INTERSEC_PLANO = 1e-4f;          // Para calculos generales (intersecciones, etc.)
 constexpr float MARGEN_ERROR_PERTENECE_ESFERA = 5e-6f;  // r=0.3 -> 5e-6; r=0.1 -> 2e-5; r=0.8 -> 2e-6
+constexpr float MARGEN_ERROR_INTERSEC_ESFERA = 8e-5f;          // Para calcular intersección de una esfera
 constexpr float MARGEN_ERROR_FOTON = 1e-7f;
 constexpr float GRAD_A_RAD = 3.1415926535898f / 180;
 //const double M_PI = 3.14159265358979323846;
