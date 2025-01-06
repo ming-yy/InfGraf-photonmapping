@@ -17,10 +17,17 @@
 template <size_t Filas, size_t Columnas>
 class Matriz {
 public:
+    // Array de arrays con <Columnas> x <Filas> floats a almacenar
     array<array<float, Columnas>, Filas> matriz;
 
+    // Constructor base
     Matriz();
+
+    // Constructor a partir de una lista de floats
     Matriz(init_list<init_list<float>> valores);
+
+    // Constructor a partir de un array de <Filas> arrays,
+    // cada uno con <Filas> valores float
     Matriz(array<array<float, Columnas>, Filas> valores);
     
     // Método para obtener el número de filas
