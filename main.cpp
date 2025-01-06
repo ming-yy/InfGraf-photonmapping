@@ -109,8 +109,6 @@ void cajaDeCornell(){
 
     renderizarEscenaConThreads(camUtilizada, cornell, "cornell", parametros);
 
-    transformarFicheroPPM("./cornell.ppm", 6);
-
     liberarMemoriaDePrimitivas(objetos);
 }
 
