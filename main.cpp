@@ -103,7 +103,7 @@ void cajaDeCornell(){
     const unsigned int pixelesAncho = 256;
     const unsigned int pixelesAlto = 256;
 
-    Parametros parametros(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, false, true);
+    Parametros parametros(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, false, true);
     
     comprobarRelacionAspecto(camUtilizada, static_cast<float>(pixelesAncho)/static_cast<float>(pixelesAlto));
 

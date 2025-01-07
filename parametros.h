@@ -27,6 +27,7 @@ public:
     TipoVecinos tipoVecinosCausticos;
     unsigned long vecinosCausticosNum;
     float vecinosCausticosRadio;
+    bool nee;
     bool luzIndirecta;
     bool printPixelesProcesados;
 
@@ -40,6 +41,7 @@ public:
                 TipoVecinos _tipoVecinosCausticos,
                 unsigned long _vecinosCausticosNum,
                 float _vecinosCausticosRadio,
-                const bool luzIndirecta,
+                const bool _nee,
+                const bool _luzIndirecta,
                 const bool _printPixelesProcesados);
 };

@@ -177,7 +177,7 @@ RGB calcBrdfDifusa(const RGB& kd){
 void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos,
                             bool& fotonCaustico, const Escena& escena, const RGB& radianciaInicial,
                             RGB& radianciaActual, const Punto& origen, const Direccion &wo_d,
-                            const BSDFs &coefsOrigen, const Direccion& normal, const bool luzIndirecta) {
+                            const BSDFs &coefsOrigen, const Direccion& normal, bool& primerFoton, const bool luzIndirecta) {
     if (vecFotonesGlobales.size() >= vecFotonesGlobales.max_size() ||
         vecFotonesCausticos.size() >= vecFotonesCausticos.max_size()) { // TERMINAL: no se pueden almacenar mas fotones
         cout << endl << "-- LIMITE DE FOTONES ALCANZADO --" << endl << endl;
@@ -201,15 +201,22 @@ void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& 
         //cout << " -- Acaba recurisividad: Rayo absorbente" << endl;
         return;
     } else if (tipoRayo == DIFUSO) {
-        radianciaActual = radianciaActual * calcBrdfDifusa(coefsOrigen.kd);
-        radianciaActual = radianciaActual / probTipoRayo;
-        Photon foton = Photon(origen.coord, wo_d, radianciaActual);
-        //cout << "Rayo difuso, metemos foton " << foton << endl;
-        if(fotonCaustico){
-            vecFotonesCausticos.push_back(foton);
+        if(!primerFoton){
+            radianciaActual = radianciaActual * calcBrdfDifusa(coefsOrigen.kd);
+            radianciaActual = radianciaActual / probTipoRayo;
+            Photon foton = Photon(origen.coord, wo_d, radianciaActual);
+            //cout << "Rayo difuso, metemos foton " << foton << endl;
+
+            if(fotonCaustico){
+                vecFotonesCausticos.push_back(foton);
+            } else {
+                vecFotonesGlobales.push_back(foton);
+            }
         } else {
-            vecFotonesGlobales.push_back(foton);
+            // Si se ha activado "nee", el primer foton no se almacena
+            primerFoton = false;
         }
+        
 
         if(!luzIndirecta) return;
 
@@ -219,11 +226,10 @@ void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& 
 
     float probDirRayo;
     Rayo wi = obtenerRayoRuletaRusa(tipoRayo, origen, wo_d, normal, probDirRayo);
-    
-    BSDFs coefsPtoIntersec;
+    Primitiva* objIntersecado = nullptr;
     Punto ptoIntersec;
     Direccion nuevaNormal;
-    bool hayIntersec = escena.interseccion(wi, coefsPtoIntersec, ptoIntersec, nuevaNormal);
+    bool hayIntersec = escena.interseccion(wi, ptoIntersec, nuevaNormal, &objIntersecado);
     if (!hayIntersec) {     // TERMINAL: el siguiente rayo (wi) no interseca con nada
         //cout << " -- Acaba recurisividad: Rayo no interseca con nada" << endl;
         return;
@@ -231,17 +237,17 @@ void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& 
     
     recursividadRandomWalk(vecFotonesGlobales, vecFotonesCausticos, fotonCaustico, 
                             escena, radianciaInicial, radianciaActual,
-                            ptoIntersec, wi.d, coefsPtoIntersec, nuevaNormal, luzIndirecta);
+                            ptoIntersec, wi.d, objIntersecado->coeficientes, nuevaNormal, primerFoton, luzIndirecta);
 }
 
 void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos,
                         const Escena& escena, const Rayo& wi, const RGB& flujoInicial, RGB& flujoRestante,
-                        const bool luzIndirecta){
+                        const bool nee, const bool luzIndirecta){
     Punto ptoIntersec;
-    BSDFs coefsPtoInterseccion;
     Direccion normal;
-    
-    if(escena.interseccion(wi, coefsPtoInterseccion, ptoIntersec, normal)){
+    Primitiva* objIntersecado = nullptr;
+
+    if(escena.interseccion(wi, ptoIntersec, normal, &objIntersecado)){
         // CUIDADO: si interseca con una fuente de luz !
         //RGB powerLuz;
         //if (escena.puntoPerteneceALuz(ptoIntersec, powerLuz)) {     // Para luces área
@@ -253,9 +259,10 @@ void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecF
         //cout << "Interseca en punto " << ptoIntersec << ", coefs " << coefsPtoInterseccion;
         //cout << " y normal " <<  normal << endl;
         bool fotonCaustico = false;
+        bool primerFoton = nee;
         recursividadRandomWalk(vecFotonesGlobales, vecFotonesCausticos, fotonCaustico, escena,
                                 flujoInicial, flujoRestante, ptoIntersec,
-                                wi.d, coefsPtoInterseccion, normal, luzIndirecta);
+                                wi.d, objIntersecado->coeficientes, normal, primerFoton, luzIndirecta);
     } else {
         //cout << endl << "Rayo no interseca con nada, muestreamos otro camino." << endl;
     }
@@ -265,7 +272,7 @@ void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecF
 // y saltarnos el NextEventEstimation posteriormente
 int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos,
                           const int numFotonesALanzar, const RGB& flujoPorFoton, const LuzPuntual& luz,
-                          const Escena& escena, const bool luzIndirecta){
+                          const Escena& escena, const bool nee, const bool luzIndirecta){
     int numRandomWalksRestantes = numFotonesALanzar;
     int numFotonesLanzados = 0;
     
@@ -281,7 +288,7 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& ve
         Rayo wi(generarDireccionAleatoriaEsfera(), luz.c);
         //cout << "Rayo aleatorio generado desde luz para randomWalk = " << wi << endl;
         RGB flujoRestante = flujoPorFoton;
-        comenzarRandomWalk(vecFotonesGlobales, vecFotonesCausticos, escena, wi, flujoPorFoton, flujoRestante, luzIndirecta);
+        comenzarRandomWalk(vecFotonesGlobales, vecFotonesCausticos, escena, wi, flujoPorFoton, flujoRestante, nee, luzIndirecta);
     }
 
     return numFotonesLanzados;
@@ -298,7 +305,7 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces){
 
 void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotonesCausticos,
                             size_t& numFotonesGlobales, size_t& numFotonesCausticos, 
-                            const int totalFotonesALanzar, const Escena& escena, const bool luzIndirecta){
+                            const int totalFotonesALanzar, const Escena& escena, const bool nee, const bool luzIndirecta){
     vector<Photon> vecFotonesGlobales;
     vector<Photon> vecFotonesCausticos;
     //cout << vecFotones.max_size() << endl;
@@ -319,7 +326,7 @@ void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotone
         // y  realmente solo se pasa del límite del vector con totalFotonesALanzar
         // ridículamente altos
         lanzarFotonesDeUnaLuz(vecFotonesGlobales, vecFotonesCausticos, numFotonesALanzar,  
-                                                        flujoFoton, luz, escena, luzIndirecta);
+                                                        flujoFoton, luz, escena, nee, luzIndirecta);
     }
 
     //printVectorFotones(vecFotones);
@@ -456,24 +463,50 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlob
     return radiancia;
 }
 
+
+RGB nextEventEstimation(const Punto& p0, const Direccion& normal, const Escena& escena,
+                        const Primitiva* objOrigen) {
+    RGB radianciaSaliente(0.0f, 0.0f, 0.0f);
+    for (LuzPuntual luz : escena.luces) {
+        if (!escena.luzIluminaPunto(p0, luz)) {
+            continue;     // Si el punto no está iluminado, nos saltamos la iteración
+        }
+
+        Direccion dirIncidente = luz.c - p0;
+        float cosAnguloIncidencia = calcCosenoAnguloIncidencia(normalizar(dirIncidente), normal);
+        RGB reflectanciaBrdfDifusa = calcBrdfDifusa(objOrigen->kd(p0));
+        RGB radianciaIncidente = luz.p / (modulo(dirIncidente) * modulo(dirIncidente));
+        radianciaIncidente = radianciaIncidente * (reflectanciaBrdfDifusa * cosAnguloIncidencia);
+        
+        radianciaSaliente += radianciaIncidente;
+    }
+    
+    int num_luces = 0;
+    
+    num_luces = max(num_luces, 1);
+    return radianciaSaliente / num_luces;
+}
+
 RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena, 
                           const PhotonMap& mapaFotonesGlobales, const PhotonMap& mapaFotonesCausticos,
                           const size_t numFotonesGlobales, const size_t numFotonesCausticos,
                           const Parametros& parametros) {
     Punto ptoIntersec;
     Direccion normal;
-    RGB radiancia(0.0f, 0.0f, 0.0f);
+    RGB radianciaDirecta(0.0f, 0.0f, 0.0f);
+    RGB radianciaIndirecta(0.0f, 0.0f, 0.0f);
     BSDFs coefsPtoInterseccion;
     Rayo wi = rayoIncidente;
     bool choqueContraDifuso = false;
     bool hayInterseccion = false;
-    
+    Primitiva* objIntersecado = nullptr;
+    float probTipoRayo;
+
     while (!choqueContraDifuso) {
-        hayInterseccion = escena.interseccion(wi, coefsPtoInterseccion, ptoIntersec, normal);
+        hayInterseccion = escena.interseccion(wi, ptoIntersec, normal, &objIntersecado);
         if (!hayInterseccion) {
             break;
         } else {
-            float probTipoRayo;
             TipoRayo tipoRayo = dispararRuletaRusa(coefsPtoInterseccion, probTipoRayo, false);
             if (tipoRayo == DIFUSO) {
                 choqueContraDifuso = true;
@@ -489,12 +522,13 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
     }
     
     if (choqueContraDifuso) {
-        radiancia = estimarEcuacionRender(escena, mapaFotonesGlobales, mapaFotonesCausticos, 
+        radianciaDirecta = nextEventEstimation(ptoIntersec, normal, escena, objIntersecado);
+        radianciaIndirecta = estimarEcuacionRender(escena, mapaFotonesGlobales, mapaFotonesCausticos, 
                                             numFotonesGlobales, numFotonesCausticos, ptoIntersec, wi.d,
                                             normal, coefsPtoInterseccion, parametros);
     }
 
-    return radiancia;
+    return (radianciaDirecta + radianciaIndirecta) / probTipoRayo;
 }
 
 void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned ancho, unsigned alto){
@@ -558,7 +592,7 @@ void renderizarEscena(const Camara& camara, const Escena& escena,
     size_t numFotonesCausticos;
     
     paso1GenerarPhotonMap(mapaFotonesGlobales, mapaFotonesCausticos, numFotonesGlobales, 
-                            numFotonesCausticos, parametros.numRandomWalks, escena, parametros.luzIndirecta);
+                            numFotonesCausticos, parametros.numRandomWalks, escena, parametros.nee, parametros.luzIndirecta);
     
     // Inicializado todo a color negro
     vector<vector<RGB>> colorPixeles(parametros.numPxlsAlto, vector<RGB>(parametros.numPxlsAncho, {0.0f, 0.0f, 0.0f}));
@@ -642,7 +676,7 @@ void renderizarEscenaConThreads(const Camara& camara, const Escena& escena, cons
     size_t numFotonesGlobales;
     size_t numFotonesCausticos;
     paso1GenerarPhotonMap(mapaFotonesGlobales, mapaFotonesCausticos, numFotonesGlobales,
-                            numFotonesCausticos, parametros.numRandomWalks, escena, parametros.luzIndirecta);
+                            numFotonesCausticos, parametros.numRandomWalks, escena, parametros.nee, parametros.luzIndirecta);
 
     vector<vector<RGB>> colorPixeles(parametros.numPxlsAlto, vector<RGB>(parametros.numPxlsAncho, {0.0f, 0.0f, 0.0f}));
 

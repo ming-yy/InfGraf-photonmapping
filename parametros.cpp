@@ -10,6 +10,7 @@ Parametros::Parametros(const unsigned _numPxlsAncho,
                 TipoVecinos _tipoVecinosCausticos,
                 unsigned long _vecinosCausticosNum,
                 float _vecinosCausticosRadio,
+                const bool _nee,
                 const bool _luzIndirecta,
                 const bool _printPixelesProcesados
                 )
@@ -25,6 +26,7 @@ Parametros::Parametros(const unsigned _numPxlsAncho,
                 tipoVecinosCausticos(_tipoVecinosCausticos),
                 vecinosCausticosNum(_vecinosCausticosNum),
                 vecinosCausticosRadio(_vecinosCausticosRadio),
-                luzIndirecta(_luzIndirecta)
+                luzIndirecta(_luzIndirecta),
+                nee(_nee)
                 {}
 

@@ -90,18 +90,18 @@ RGB calcBrdfDifusa(const RGB& kd);
 // de la siguiente intersección, según el rayo devuelto tras la ruleta rusa.
 void recursividadRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, bool& fotonCaustico, 
                             const Escena& escena, const RGB& radianciaInicial, RGB& radianciaActual, const Punto& origen,
-                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal, const bool luzIndirecta);
+                            const Direccion &wo_d, const BSDFs &coefsOrigen, const Direccion& normal, bool& primerFoton, const bool luzIndirecta);
 
 // Método que, dada una luz, lanza un foton desde esa luz guarda los fotones que rebotan 
 // en las superficies difusas en <vecFotones> (hasta que el randomWalk termine por absorción, 
 // por no-intersección o por llegar al límite de vecFotones)
 void comenzarRandomWalk(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos,
-                        const Escena& escena, const Rayo& wi, const RGB& flujoInicial, RGB& flujoRestante, const bool luzIndirecta);
+                        const Escena& escena, const Rayo& wi, const RGB& flujoInicial, RGB& flujoRestante, const bool nee, const bool luzIndirecta);
 
 // Optamos por almacenar todos los rebotes difusos (incluido el primero)
 // y saltarnos el NextEventEstimation posteriormente
 int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& vecFotonesCausticos, const int numFotonesALanzar,
-                         const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena, const bool luzIndirecta);
+                         const RGB& flujoPorFoton, const LuzPuntual& luz, const Escena& escena, const bool nee, const bool luzIndirecta);
 
 // Función que devuelve la suma de los componentes maximos de las potencias de las <luces>
 float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
@@ -109,7 +109,7 @@ float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 // Método que ...
 void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotonesCausticos, 
                             size_t& numFotonesGlobales, size_t& numFotonesCausticos,
-                            const int totalFotonesALanzar, const Escena& escena, const bool luzIndirecta);
+                            const int totalFotonesALanzar, const Escena& escena, const bool nee, const bool luzIndirecta);
 
 
 // Método que imprime por pantalla un vector de fotones
@@ -133,6 +133,9 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlob
                             const size_t numFotonesGlobales, const size_t numFotonesCausticos,
                             const Punto& ptoIntersec, const Direccion& dirIncidente,
                             const Direccion& normal, const BSDFs& coefsPtoInterseccion, const Parametros& parametros);
+
+RGB nextEventEstimation(const Punto& p0, const Direccion& normal, const Escena& escena,
+                        const Primitiva* objOrigen);
 
 // Función que, dado un rayo (que proviene de la cámara y atraviesa un pixel), una escena y
 // un mapa de fotones (producido por las luces de la escena), devuelve la radiancia del punto
