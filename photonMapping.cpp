@@ -145,7 +145,6 @@ TipoRayo dispararRuletaRusa(const BSDFs& coefs, float& probRuleta, const bool ha
     float probDifuso = maxKD / total;
     float probEspecular = maxKS / total;
     float probRefractante = maxKT / total;
-    //float probAbsorbente = 1.0f - probDifuso - probEspecular - probRefractante;
     
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -162,6 +161,9 @@ TipoRayo dispararRuletaRusa(const BSDFs& coefs, float& probRuleta, const bool ha
         probRuleta = probRefractante;
         return REFRACTANTE;  // Rayo refractante
     } else {
+        if (hayAbsorbente) {    // No deberíamos necesitarlo
+            probRuleta = 1.0f - probDifuso - probEspecular - probRefractante;
+        }
         return ABSORBENTE;   // Absorbente
     }
 }
@@ -501,7 +503,7 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
     bool hayInterseccion = false;
     Primitiva* objIntersecado = nullptr;
     float probTipoRayo;
-
+    
     while (!choqueContraDifuso) {
         hayInterseccion = escena.interseccion(wi, ptoIntersec, normal, &objIntersecado);
         if (!hayInterseccion) {
@@ -518,10 +520,11 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
                 std::exit(EXIT_FAILURE);
             }
             
+            
         }
     }
     
-    if (choqueContraDifuso){
+    if (choqueContraDifuso && hayInterseccion){
         if(parametros.nee){
             radianciaDirecta = nextEventEstimation(ptoIntersec, normal, escena, objIntersecado);
         }
