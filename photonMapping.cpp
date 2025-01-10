@@ -457,8 +457,12 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlob
 
     for (const Photon* photon : fotonesCercanos) {
         if (photon) {
-            //radiancia += radianciaKernelConstante(photon, radio);
-            radiancia += radianciaKernelGaussiano(photon, radioMaximo, ptoIntersec);
+            //radiancia += radianciaKernelConstante(photon, parametros.vecinosGlobalesRadio);
+            //radiancia += radianciaKernelGaussiano(photon, radioMaximo, ptoIntersec);
+            radiancia += radianciaKernelEpanechnikov(photon, radioMaximo, ptoIntersec);
+            //radiancia += radianciaKernelBipeso(photon, radioMaximo, ptoIntersec);
+            //radiancia += radianciaKernelLogistico(photon, radioMaximo, ptoIntersec);
+            //radiancia += radianciaKernelConico(photon, radioMaximo, ptoIntersec);
         }
     }
 
@@ -528,13 +532,14 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
         if(parametros.nee){
             radianciaDirecta = nextEventEstimation(ptoIntersec, normal, escena, objIntersecado);
         }
-
-        radianciaIndirecta = estimarEcuacionRender(escena, mapaFotonesGlobales, mapaFotonesCausticos, 
-                                                        numFotonesGlobales, numFotonesCausticos, ptoIntersec, wi.d,
-                                                        normal, coefsPtoInterseccion, parametros);
+        
+        radianciaIndirecta = estimarEcuacionRender(escena, mapaFotonesGlobales, mapaFotonesCausticos,
+                                                   numFotonesGlobales, numFotonesCausticos, ptoIntersec, wi.d,
+                                                   normal, coefsPtoInterseccion, parametros);
+        return (radianciaDirecta + radianciaIndirecta) / probTipoRayo;
+    } else {
+        return RGB({0.0f, 0.0f, 0.0f});
     }
-
-    return (radianciaDirecta + radianciaIndirecta) / probTipoRayo;
 }
 
 void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned ancho, unsigned alto){

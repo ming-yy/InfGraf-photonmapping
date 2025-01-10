@@ -60,11 +60,11 @@ void cajaDeCornell(){
     objetos.push_back(new Plano({0.0f, 1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano suelo, blanco
     objetos.push_back(new Plano({0.0f, -1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano techo, blanco
     objetos.push_back(new Plano({0.0f, 0.0f, -1.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano fondo, blanco
-    objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({1.0f, 1.0f, 1.0f}), "espejo")); // esfera izquierda, blanca
+    objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({1.0f, 1.0f, 0.0f}), "muy_difuso")); // esfera izquierda, blanca
     //objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.89f, 0.45f, 0.82f}), "muy_difuso")); // esfera izquierda, rosa
     //objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "muy_difuso")); // esfera izquierda, azul
     //objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "muy_difuso")); // esfera derecha, azul
-    objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({1.0f, 1.0f, 1.0f}), "cristal")); // esfera derecha, blanca
+    objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({0.0f, 1.0f, 1.0f}), "muy_difuso")); // esfera derecha, blanca
     vector<LuzPuntual> luces;
 
     RGB potencia(1.0f, 1.0f, 1.0f);
@@ -104,8 +104,8 @@ void cajaDeCornell(){
     const unsigned int pixelesAlto = 256;
 
     //Parametros parametros(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, false, true); // buenos para luz indirecta
-    Parametros parametrosNEE(pixelesAncho, pixelesAlto, 8, 100000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, false, true);
-    Parametros parametrosSinNEE(pixelesAncho, pixelesAlto, 8, 1000000, RADIONUMERO, 100, 0.05, NUMERO, 100, 0, false, false, true);
+    Parametros parametrosNEE(pixelesAncho, pixelesAlto, 8, 100000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, true, true);
+    Parametros parametrosSinNEE(pixelesAncho, pixelesAlto, 32, 500000, RADIONUMERO, 100, 0.05, NUMERO, 100, 0, false, true, true);
 
     comprobarRelacionAspecto(camUtilizada, static_cast<float>(pixelesAncho)/static_cast<float>(pixelesAlto));
 
