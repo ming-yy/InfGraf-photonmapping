@@ -509,7 +509,7 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
         if (!hayInterseccion) {
             break;
         } else {
-            TipoRayo tipoRayo = dispararRuletaRusa(coefsPtoInterseccion, probTipoRayo, false);
+            TipoRayo tipoRayo = dispararRuletaRusa(objIntersecado->coeficientes, probTipoRayo, false);
             if (tipoRayo == DIFUSO) {
                 choqueContraDifuso = true;
             } else if (tipoRayo == ESPECULAR || tipoRayo == REFRACTANTE) {
