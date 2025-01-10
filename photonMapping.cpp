@@ -380,7 +380,7 @@ RGB radianciaKernelEpanechnikov(const Photon* photon, const float radioMaximo,
                                 const Punto& centro){
     float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
     float divisionAlCuadrado = pow((radioAFoton/radioMaximo), 2);
-    float kernel = 2 * (1 - divisionAlCuadrado);
+    float kernel = (3.0f/4.0f) * (1 - divisionAlCuadrado);
     return photon->flujo*kernel;
 }
 
@@ -388,7 +388,7 @@ RGB radianciaKernelBipeso(const Photon* photon, const float radioMaximo,
                                 const Punto& centro){
     float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
     float divisionAlCuadrado = pow((radioAFoton/radioMaximo), 2);
-    float kernel = 3 * pow((1 - divisionAlCuadrado), 2);
+    float kernel = (15.0f/16.0f) * pow((1 - divisionAlCuadrado), 2);
     return photon->flujo*kernel;
 }
 
