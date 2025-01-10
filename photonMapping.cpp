@@ -412,6 +412,7 @@ float maximoRadio(const Punto& ptoIntersec, const vector<const Photon*> fotonesC
     return maximoRadio;
 }
 
+
 RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlobales, const PhotonMap& mapaFotonesCausticos,
                             const size_t numFotonesGlobales, const size_t numFotonesCausticos, const Punto& ptoIntersec, const Direccion& dirIncidente,
                             const Direccion& normal, const BSDFs& coefsPtoInterseccion, const Parametros& parametros){
@@ -445,29 +446,44 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlob
                         parametros.vecinosCausticosNum, fotonesCercanosCausticos);
     }
 
+    /*
     // Juntamos todos los fotones, Globales + Causticos
     vector<const Photon*> fotonesCercanos = fotonesCercanosGlobales;
     fotonesCercanos.insert(fotonesCercanos.end(), 
                          fotonesCercanosCausticos.begin(), 
                          fotonesCercanosCausticos.end());
 
-    float radioMaximo = maximoRadio(ptoIntersec, fotonesCercanos);
+    */
 
     RGB radiancia(0.0f, 0.0f, 0.0f);
+    float radioMaximoCausticos = maximoRadio(ptoIntersec, fotonesCercanosCausticos);
+    float radioMaximoGlobales = maximoRadio(ptoIntersec, fotonesCercanosGlobales);
 
-    for (const Photon* photon : fotonesCercanos) {
+    for (const Photon* photon : fotonesCercanosCausticos) {
         if (photon) {
             //radiancia += radianciaKernelConstante(photon, parametros.vecinosGlobalesRadio);
-            //radiancia += radianciaKernelGaussiano(photon, radioMaximo, ptoIntersec);
-            radiancia += radianciaKernelEpanechnikov(photon, radioMaximo, ptoIntersec);
-            //radiancia += radianciaKernelBipeso(photon, radioMaximo, ptoIntersec);
-            //radiancia += radianciaKernelLogistico(photon, radioMaximo, ptoIntersec);
-            //radiancia += radianciaKernelConico(photon, radioMaximo, ptoIntersec);
+            //radiancia += radianciaKernelGaussiano(photon, radioMaximoCausticos, ptoIntersec);
+            radiancia += radianciaKernelEpanechnikov(photon, radioMaximoCausticos, ptoIntersec);
+            //radiancia += radianciaKernelBipeso(photon, radioMaximoCausticos, ptoIntersec);
+            //radiancia += radianciaKernelLogistico(photon, radioMaximoCausticos, ptoIntersec);
+            //radiancia += radianciaKernelConico(photon, radioMaximoCausticos, ptoIntersec);
+        }
+    }
+
+    for (const Photon* photon : fotonesCercanosGlobales) {
+        if (photon) {
+            //radiancia += radianciaKernelConstante(photon, parametros.vecinosGlobalesRadio);
+            //radiancia += radianciaKernelGaussiano(photon, radioMaximoGlobales, ptoIntersec);
+            radiancia += radianciaKernelEpanechnikov(photon, radioMaximoGlobales, ptoIntersec);
+            //radiancia += radianciaKernelBipeso(photon, radioMaximoGlobales, ptoIntersec);
+            //radiancia += radianciaKernelLogistico(photon, radioMaximoGlobales, ptoIntersec);
+            //radiancia += radianciaKernelConico(photon, radioMaximoGlobales, ptoIntersec);
         }
     }
 
     return radiancia;
 }
+
 
 
 RGB nextEventEstimation(const Punto& p0, const Direccion& normal, const Escena& escena,
