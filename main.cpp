@@ -100,14 +100,17 @@ void cajaDeCornell(){
                         {-1.0f, 0.0f, 0.0f});
 
     Camara camUtilizada = cam;
-    const unsigned int pixelesAncho = 256;
-    const unsigned int pixelesAlto = 256;
+    const unsigned int pixelesAncho = 512;
+    const unsigned int pixelesAlto = 512;
 
-    Parametros parametros(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, false, true);
-    
+    //Parametros parametros(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, false, true); // buenos para luz indirecta
+    Parametros parametrosNEE(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, false, true);
+    Parametros parametrosSinNEE(pixelesAncho, pixelesAlto, 16, 1000000, RADIONUMERO, 100, 0.05, NUMERO, 100, 0, false, false, true);
+
     comprobarRelacionAspecto(camUtilizada, static_cast<float>(pixelesAncho)/static_cast<float>(pixelesAlto));
 
-    renderizarEscenaConThreads(camUtilizada, cornell, "cornell", parametros);
+    //renderizarEscenaConThreads(camUtilizada, cornell, "cornell_nee", parametrosNEE);
+    renderizarEscenaConThreads(camUtilizada, cornell, "cornell_sin", parametrosSinNEE);
 
     liberarMemoriaDePrimitivas(objetos);
 }

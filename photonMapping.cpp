@@ -521,11 +521,14 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
         }
     }
     
-    if (choqueContraDifuso) {
-        radianciaDirecta = nextEventEstimation(ptoIntersec, normal, escena, objIntersecado);
+    if (choqueContraDifuso){
+        if(parametros.nee){
+            radianciaDirecta = nextEventEstimation(ptoIntersec, normal, escena, objIntersecado);
+        }
+
         radianciaIndirecta = estimarEcuacionRender(escena, mapaFotonesGlobales, mapaFotonesCausticos, 
-                                            numFotonesGlobales, numFotonesCausticos, ptoIntersec, wi.d,
-                                            normal, coefsPtoInterseccion, parametros);
+                                                        numFotonesGlobales, numFotonesCausticos, ptoIntersec, wi.d,
+                                                        normal, coefsPtoInterseccion, parametros);
     }
 
     return (radianciaDirecta + radianciaIndirecta) / probTipoRayo;
