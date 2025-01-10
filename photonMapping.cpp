@@ -372,7 +372,7 @@ RGB radianciaKernelGaussiano(const Photon* photon, const float radioMaximo,
 RGB radianciaKernelConico(const Photon* photon, const float radioMaximo, 
                                 const Punto& centro){
     float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
-    float kernel = 1 - (radioAFoton/radioMaximo); // Hay que normalizarlo dividiendo por (1-2/3)??? mirar trabajo julia 3.2.1
+    float kernel = 1 - (radioAFoton/radioMaximo);
     return photon->flujo*kernel;
 }
 
