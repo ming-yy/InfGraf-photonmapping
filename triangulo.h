@@ -56,6 +56,8 @@ public:
 
     // Funcion que devuelve "True" si y solo si el punto <p0> pertecene al triángulo.
     bool pertenece(const Punto& punto) const override;
+
+    Direccion getNormal() const;
     
     // Funcion que devuelve la normal de la primitiva en el punto <punto>
     Direccion getNormal(const Punto& punto) const override;
@@ -79,6 +81,9 @@ public:
     // Funcion que obtiene la posición del punto <pto> del triángulo en el eje V de la
     // textura correspondiente. Tenemos garantizado que <pto> pertenece al objeto.
     float getEjeTexturaV(const Punto& pto) const override;
+
+    // Funcion que devuelve la distancia mas cercana al triangulo dado otro punto
+    float distanciaPunto(const Punto& pto) const;
     
     // Debug
     void diHola() const override;

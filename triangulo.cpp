@@ -105,6 +105,12 @@ bool Triangulo::pertenece(const Punto& punto) const {
     return (u >= 0.0f && v >= 0.0f && u + v <= 1.0f);
 }
 
+Direccion Triangulo::getNormal() const {
+    Direccion AB = p1 - p0;
+    Direccion AC = p2 - p0;
+    return cross(AB, AC);
+}
+
 Direccion Triangulo::getNormal(const Punto& punto) const {
     return getNormalInterpolada(punto);
 }
@@ -180,6 +186,38 @@ float Triangulo::getEjeTexturaV(const Punto& pto) const {
     
     float w = 1.0f - u - v;
     return v0 * u + v1 * v + v2 * w;
+}
+
+float Triangulo::distanciaPunto(const Punto& pto) const {
+    // Paso 1: Proyectar el punto sobre el plano del triángulo
+    Direccion normal = getNormal();
+    float distanciaPlano = dot((pto - p0), normal);
+    Punto pProyectado = pto - normal * distanciaPlano;
+
+    // Paso 2: Verificar si el punto proyectado está dentro del triángulo
+    float u, v;
+    bool esValido = getCoordBaricentricas(pProyectado, u, v);
+
+    if (esValido) {
+        // Si está dentro del triángulo, la distancia es la perpendicular al plano
+        return std::abs(distanciaPlano);
+    }
+
+    // Paso 3: Calcular la distancia mínima a los bordes del triángulo
+    auto distanciaSegmento = [](const Punto& p, const Punto& a, const Punto& b) -> float {
+        Direccion ab = b - a;
+        float t = std::max(0.0f, std::min(1.0f, dot(p - a, ab) / dot(ab, ab)));
+        Punto proyeccion = a + ab * t;
+        return modulo(p - proyeccion);
+    };
+
+    float distLado0 = distanciaSegmento(pto, p0, p1);
+    float distLado1 = distanciaSegmento(pto, p1, p2);
+    float distLado2 = distanciaSegmento(pto, p2, p0);
+
+    // Retornar la distancia mínima a los lados del triángulo
+    float aux = std::min(distLado0, distLado1);
+    return std::min(aux, distLado2);
 }
 
 void Triangulo::diHola() const {

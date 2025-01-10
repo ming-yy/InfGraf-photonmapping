@@ -73,13 +73,11 @@ public:
     // eje V de la textura correspondiente.
     float getEjeTexturaV(const Punto& pto) const override;
 
-    // Funcion que devuelve una esfera que contiene todos los vertices de la malla
-    // Es la esfera formada por el punto central entre los 2 vertices mas distantes
-    // de la malla como centro de la esfera, y de radio tiene la distancia entre el
-    // punto central y cualquiera de esos 2 vertices mas distantes
-    Esfera minimumBoundingSphere();
+    // Funcion que devuelve true si el rayo interseca con la esfera limite
+    bool interseccionEsferaLimite(const Rayo& r) const;
 
-    
+    int trianguloMasCercano(const Punto& p) const;
+
     // Debug
     void diHola() const override;
 };

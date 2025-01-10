@@ -101,29 +101,24 @@ vector<Triangulo> generarModeloPLY(const string& rutaArchivo, const string rutaT
 }
 
 Esfera calcularBoundingSphere(const vector<Punto>& puntos) {
-    // Paso 1: Encuentra los dos puntos más alejados entre sí
-    Punto p1 = puntos[0];
-    Punto p2 = puntos[0];
-    float maxDist = 0.0f;
+    // Paso 1: Encuentra un punto inicial, como el promedio de todos los puntos
+    Punto centro(0, 0, 0);
+    for (const auto& p : puntos) {
+        centro = centro + p; // Suma todos los puntos
+    }
+    centro = centro / static_cast<float>(puntos.size()); // Divide para obtener el promedio
 
-    for (size_t i = 0; i < puntos.size(); ++i) {
-        for (size_t j = i + 1; j < puntos.size(); ++j) {
-            float dist = modulo(puntos[i] - puntos[j]);
-            if (dist > maxDist) {
-                maxDist = dist;
-                p1 = puntos[i];
-                p2 = puntos[j];
-            }
+    // Paso 2: Encuentra el radio máximo desde el centro
+    float maxDist = 0.0f;
+    for (const auto& p : puntos) {
+        float dist = modulo(p - centro); // Distancia del punto al centro
+        if (dist > maxDist) {
+            maxDist = dist;
         }
     }
 
-    // Paso 2: Calcula el centro como el punto medio de los puntos más alejados
-    Punto centro = p1.puntoMedio(p2);
-
-    // Paso 3: El radio es la mitad de la distancia entre los dos puntos más alejados
-    float radio = maxDist / 2;
-
-    return Esfera(centro, radio);
+    // Paso 3: Devuelve la esfera con el centro calculado y el radio máximo
+    return Esfera(centro, maxDist);
 }
 
 Esfera minimumBoundingSphere(const vector<Punto>& vertices) {
