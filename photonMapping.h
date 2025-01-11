@@ -147,7 +147,7 @@ RGB obtenerRadianciaPixel(const Rayo& rayoIncidente, const Escena& escena,
                             const size_t numFotonesGlobales, const size_t numFotonesCausticos,
                             const Parametros& parametros);
 
-// ...
+// Método que muestra por pantalla el número de píxeles procesados (cada 100 píxeles)
 void printPixelActual(unsigned totalPixeles, unsigned numPxlsAncho, unsigned ancho, unsigned alto);
 
 // Método que lee los fotones dispersados por <mapaFotones> vistos desde <camara>

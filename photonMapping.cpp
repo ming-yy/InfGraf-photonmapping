@@ -462,8 +462,8 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlob
     for (const Photon* photon : fotonesCercanosCausticos) {
         if (photon) {
             //radiancia += radianciaKernelConstante(photon, parametros.vecinosGlobalesRadio);
-            //radiancia += radianciaKernelGaussiano(photon, radioMaximoCausticos, ptoIntersec);
-            radiancia += radianciaKernelEpanechnikov(photon, radioMaximoCausticos, ptoIntersec);
+            radiancia += radianciaKernelGaussiano(photon, radioMaximoCausticos, ptoIntersec);
+            //radiancia += radianciaKernelEpanechnikov(photon, radioMaximoCausticos, ptoIntersec);
             //radiancia += radianciaKernelBipeso(photon, radioMaximoCausticos, ptoIntersec);
             //radiancia += radianciaKernelLogistico(photon, radioMaximoCausticos, ptoIntersec);
             //radiancia += radianciaKernelConico(photon, radioMaximoCausticos, ptoIntersec);
