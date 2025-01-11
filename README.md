@@ -30,7 +30,7 @@ ESTRUCTURA DEL PROYECTO
 
 Archivos principales
     •    main.cpp
-Configura la escena, la cámara, los parámetros del renderizador y ejecuta el renderizador. Utiliza estructuras de if-else para seleccionar qué test (1-11) o escena (12-13) ejecutar. Tiene funciones de comprobación de aspect-ratio y función que se asegura de que no se mezclan luces puntuales con luces de área.
+Configura la escena, la cámara, los parámetros del renderizador y ejecuta el renderizador. Utiliza estructuras de if-else para seleccionar qué test (1-11) o escena (12-13) ejecutar. Tiene funciones de comprobación de aspect-ratio.
     •    photonMapping.cpp
 Contiene la lógica central para el Photon Tracing y para el renderizado de la imagen final a partir del mapa de fotones. Implementa características clave como photon tracing (paso 1), estimación de densidad (paso 2), paralelización, Ruleta Rusa, kernels, etc.
     •    escena.cpp

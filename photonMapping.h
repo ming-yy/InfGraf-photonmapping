@@ -106,7 +106,7 @@ int lanzarFotonesDeUnaLuz(vector<Photon>& vecFotonesGlobales, vector<Photon>& ve
 // Función que devuelve la suma de los componentes maximos de las potencias de las <luces>
 float calcularPotenciaTotal(const vector<LuzPuntual>& luces);
 
-// Método que ...
+// Función que genera el mapa de fotones globales y cáusticos.
 void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotonesCausticos, 
                             size_t& numFotonesGlobales, size_t& numFotonesCausticos,
                             const int totalFotonesALanzar, const Escena& escena, const bool nee, const bool luzIndirecta);
@@ -115,25 +115,37 @@ void paso1GenerarPhotonMap(PhotonMap& mapaFotonesGlobales, PhotonMap& mapaFotone
 // Método que imprime por pantalla un vector de fotones
 void printVectorFotones(const vector<Photon>& vecFotones);
 
-// Función que...
-RGB radianciaKernelConstante(const Photon* photon, const float radio);
-
-// Función que...
+// Función que devuelve la distancia entre la ubicación del fotón y el punto <centro>
 float distanciaEntreFotonYPunto(const Photon* photon, const Punto& centro);
 
-// Función que...
-RGB radianciaKernelGaussiano(const Photon* photon, const float radioMaximo, 
-                                const Punto& centro);
+// Función que calcula el valor del kernel Constante, lo multiplica por el flujo del fotón y lo devuelve.
+RGB radianciaKernelConstante(const Photon* photon, const float radio);
+
+// Función que calcula el valor del kernel Cónico, lo multiplica por el flujo del fotón y lo devuelve.
+RGB radianciaKernelConico(const Photon* photon, const float radioMaximo, const Punto& centro);
+
+// Función que calcula el valor del kernel Epanechnikov, lo multiplica por el flujo del fotón y lo devuelve.
+RGB radianciaKernelEpanechnikov(const Photon* photon, const float radioMaximo, const Punto& centro);
+
+// Función que calcula el valor del kernel Bipeso, lo multiplica por el flujo del fotón y lo devuelve.
+RGB radianciaKernelBipeso(const Photon* photon, const float radioMaximo, const Punto& centro);
+
+// Función que calcula el valor del kernel Gaussiano, lo multiplica por el flujo del fotón y lo devuelve.
+RGB radianciaKernelGaussiano(const Photon* photon, const float radioMaximo, const Punto& centro);
+
+// Función que calcula el valor del kernel Logístico, lo multiplica por el flujo del fotón y lo devuelve.
+RGB radianciaKernelLogistico(const Photon* photon, const float radioMaximo, const Punto& centro);
                                 
-// Función que...
+// Función que devuelve el máximo radio del vector de fotones.
 float maximoRadio(const Punto& ptoIntersec, const vector<const Photon*> fotonesCercanos);
 
-// Función que...
+// Función que computa la estimación de la ecuación de render.
 RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlobales, const PhotonMap& mapaFotonesCausticos,
                             const size_t numFotonesGlobales, const size_t numFotonesCausticos,
                             const Punto& ptoIntersec, const Direccion& dirIncidente,
                             const Direccion& normal, const BSDFs& coefsPtoInterseccion, const Parametros& parametros);
 
+// Función que calcula el NEE.
 RGB nextEventEstimation(const Punto& p0, const Direccion& normal, const Escena& escena,
                         const Primitiva* objOrigen);
 
@@ -157,8 +169,9 @@ void paso2LeerPhotonMap1RPP(const Camara& camara, const Escena& escena, const fl
                     const PhotonMap& mapaFotonesCausticos, const size_t numFotonesGlobales, 
                     const size_t numFotonesCausticos, const int totalPixeles, const Parametros& parametros);
 
-// ...
-void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, const float anchoPorPixel, 
+// Método que lanza varios rayos por pixel. Lee los fotones dispersados por <mapaFotones> vistos desde <camara>
+// y "colorea" los píxeles que forman la imagen usando la estimación de densidad de Kernel
+void paso2LeerPhotonMapAntialiasing(const Camara& camara, const Escena& escena, const float anchoPorPixel,
                     const float altoPorPixel, vector<vector<RGB>>& colorPixeles, const PhotonMap& mapaFotonesGlobales,
                     const PhotonMap& mapaFotonesCausticos, const size_t numFotonesGlobales, 
                     const size_t numFotonesCausticos, const int totalPixeles, const Parametros& parametros);
@@ -169,7 +182,7 @@ void renderizarEscena(const Camara& camara, const Escena& escena,
 
 
 //////// Parelelización
-
+///
 void renderizarRangoFilasPhotonMap1RPP(const Camara& camara, unsigned inicioFila, unsigned finFila,
                                        const Escena& escena, float anchoPorPixel,
                                        float altoPorPixel, vector<vector<RGB>>& colorPixeles,

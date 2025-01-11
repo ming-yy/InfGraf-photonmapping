@@ -54,7 +54,9 @@ void liberarMemoriaDePrimitivas(vector<Primitiva*>& objetos) {
 // -z = cerca
 
 void cajaDeCornell(){
+    // ------------------------------ Primitivas base con o sin texturas ------------------------------
     vector<Primitiva*> objetos;
+    
     objetos.push_back(new Plano({1.0f, 0.0f, 0.0f}, 1.0f, RGB({1.0f, 0.0f, 0.0f}), "muy_difuso")); // plano izquierdo, rojo
     objetos.push_back(new Plano({-1.0f, 0.0f, 0.0f}, 1.0f, RGB({0.0f, 1.0f, 0.0f}), "muy_difuso")); // plano derecho, verde
     objetos.push_back(new Plano({0.0f, 1.0f, 0.0f}, 1.0f, RGB({1.0f, 1.0f, 1.0f}), "muy_difuso")); // plano suelo, blanco
@@ -65,12 +67,23 @@ void cajaDeCornell(){
     //objetos.push_back(new Esfera({-0.5f, -0.7f, 0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "muy_difuso")); // esfera izquierda, azul
     //objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "muy_difuso")); // esfera derecha, azul
     objetos.push_back(new Esfera({0.5f, -0.7f, -0.25f}, 0.3f, RGB({0.7f, 1.0f, 1.0f}), "muy_difuso")); // esfera derecha, blanca
+    
+    // ---------------------------------------------
+    
+    
+    // ------------------------------ Luces puntuales ------------------------------
     vector<LuzPuntual> luces;
 
     RGB potencia(1.0f, 1.0f, 1.0f);
     luces.push_back(LuzPuntual({0.0f, 0.5f, 0.0f}, potencia));
     //luces.push_back(LuzPuntual({0.0f, 0.0f, -1.0f}, potencia));
+    
+    // ---------------------------------------------
+    
     Escena cornell = Escena(objetos, luces);
+    
+    
+    // ------------------------------ Cámaras ------------------------------
     
     Camara cam = Camara({0.0f, 0.0f, -3.5f},
                         {0.0f, 0.0f, 3.0f},
@@ -98,21 +111,26 @@ void cajaDeCornell(){
                         {0.0f, 0.0f, 3.0f},
                         {0.0f, 1.0f, 0.0f},
                         {-1.0f, 0.0f, 0.0f});
-
-    Camara camUtilizada = cam;
+    
+    // ---------------------------------------------
+    
+    
+    // ------------------------------ Parámetros ------------------------------
+    
     const unsigned int pixelesAncho = 256;
     const unsigned int pixelesAlto = 256;
+    Camara camUtilizada = cam;
 
     //Parametros parametros(pixelesAncho, pixelesAlto, 16, 500000, RADIONUMERO, 100, 0.025, NUMERO, 100, 0, true, false, true); // buenos para luz indirecta
     //Parametros parametrosSinNEE(pixelesAncho, pixelesAlto, 16, 5000000, RADIONUMERO, 250, 0.05, NUMERO, 100, 0, false, false, true);
-
-
     //Parametros parametrosCausticoGlobal(pixelesAncho, pixelesAlto, 16, 5000000, RADIONUMERO, 100, 0.05, RADIONUMERO, 100, 0.025, false, true, true); //
-
     Parametros parametros(pixelesAncho, pixelesAlto, 16, 1000000, RADIONUMERO, 2, 0.05, RADIONUMERO, 100, 0.025, false, true, true); //
 
+    // ---------------------------------------------
+    
+    
     comprobarRelacionAspecto(camUtilizada, static_cast<float>(pixelesAncho)/static_cast<float>(pixelesAlto));
-
+    
     renderizarEscenaConThreads(camUtilizada, cornell, "cornell", parametros, 14);
     //renderizarEscenaConThreads(camUtilizada, cornell, "cornell_sin", parametrosSinNEE, 14);
 

@@ -369,31 +369,27 @@ RGB radianciaKernelGaussiano(const Photon* photon, const float radioMaximo,
     return photon->flujo*kernel;
 }
 
-RGB radianciaKernelConico(const Photon* photon, const float radioMaximo, 
-                                const Punto& centro){
+RGB radianciaKernelConico(const Photon* photon, const float radioMaximo, const Punto& centro){
     float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
     float kernel = 1 - (radioAFoton/radioMaximo);
     return photon->flujo*kernel;
 }
 
-RGB radianciaKernelEpanechnikov(const Photon* photon, const float radioMaximo, 
-                                const Punto& centro){
+RGB radianciaKernelEpanechnikov(const Photon* photon, const float radioMaximo, const Punto& centro){
     float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
     float divisionAlCuadrado = pow((radioAFoton/radioMaximo), 2);
     float kernel = (3.0f/4.0f) * (1 - divisionAlCuadrado);
     return photon->flujo*kernel;
 }
 
-RGB radianciaKernelBipeso(const Photon* photon, const float radioMaximo, 
-                                const Punto& centro){
+RGB radianciaKernelBipeso(const Photon* photon, const float radioMaximo, const Punto& centro){
     float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
     float divisionAlCuadrado = pow((radioAFoton/radioMaximo), 2);
     float kernel = (15.0f/16.0f) * pow((1 - divisionAlCuadrado), 2);
     return photon->flujo*kernel;
 }
 
-RGB radianciaKernelLogistico(const Photon* photon, const float radioMaximo, 
-                                const Punto& centro){
+RGB radianciaKernelLogistico(const Photon* photon, const float radioMaximo, const Punto& centro){
     float radioAFoton = distanciaEntreFotonYPunto(photon, centro);
     float division = radioAFoton/radioMaximo;
     float denominador = pow(M_E, division) + 2 + pow(M_E, -division);
@@ -473,8 +469,8 @@ RGB estimarEcuacionRender(const Escena& escena, const PhotonMap& mapaFotonesGlob
     for (const Photon* photon : fotonesCercanosGlobales) {
         if (photon) {
             //radiancia += radianciaKernelConstante(photon, parametros.vecinosGlobalesRadio);
-            //radiancia += radianciaKernelGaussiano(photon, radioMaximoGlobales, ptoIntersec);
-            radiancia += radianciaKernelEpanechnikov(photon, radioMaximoGlobales, ptoIntersec);
+            radiancia += radianciaKernelGaussiano(photon, radioMaximoGlobales, ptoIntersec);
+            //radiancia += radianciaKernelEpanechnikov(photon, radioMaximoGlobales, ptoIntersec);
             //radiancia += radianciaKernelBipeso(photon, radioMaximoGlobales, ptoIntersec);
             //radiancia += radianciaKernelLogistico(photon, radioMaximoGlobales, ptoIntersec);
             //radiancia += radianciaKernelConico(photon, radioMaximoGlobales, ptoIntersec);
